@@ -8,14 +8,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Source
 
-set (SOURCE_ONE_WEEKEND
-src/InOneWeekend/main.cpp
-)
+file(GLOB SOURCE_ONE_WEEKEND "src/InOneWeekend/*.cpp" "src/InOneWeekend/*.h")
 
 include_directories(src)
 
 # Executables
-add_executable(inOneWeekend ${EXTERNAL} ${SOURCE_ONE_WEEKEND})
+add_executable(inOneWeekend ${EXTERNAL} ${SOURCE_ONE_WEEKEND}) 
 
 # Specific compiler flags below. We're not going to add options for all possible compilers, but if
 # you're new to CMake (like we are), the following may be a helpful example if you're using a
