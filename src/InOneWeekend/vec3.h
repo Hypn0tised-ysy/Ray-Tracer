@@ -94,6 +94,11 @@ double dotProduct(vec3 const &leftVector, vec3 const &rightVector) {
          leftVector.z * rightVector.z;
 }
 
+double operator*(vec3 const &leftVector, vec3 const &rightVector) {
+  return leftVector.x * rightVector.x + leftVector.y * rightVector.y +
+         leftVector.z * rightVector.z;
+}
+
 vec3 crossProduct(vec3 const &leftVector, vec3 const &rightVector) {
   return vec3(leftVector.y * rightVector.z - leftVector.z * rightVector.y,
               leftVector.z * rightVector.x - leftVector.x * rightVector.z,

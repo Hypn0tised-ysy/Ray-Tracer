@@ -6,6 +6,13 @@
 #include "ray.h"
 #include "vec3.h"
 
+struct Sphere {
+  Sphere(point3 const &center, double radius)
+      : center(center), radius(radius) {}
+  point3 center;
+  double radius;
+};
+
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
   assert(fromStartToEnd >= 0.0 && fromStartToEnd <= 1.0);
@@ -13,11 +20,29 @@ toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
       (1 - fromStartToEnd) * startValue + fromStartToEnd * endValue;
   return blendValue;
 }
+
+bool hit_sphere(Ray const &ray, Sphere const &sphere) {
+  // 判断光线与球体是否相交只需求解一个一元二次方程组
+  vec3 centerMinusRayOrigin = sphere.center - ray.getOrigin();
+  double a = ray.getDirection() * ray.getDirection(),
+         b = -2.0 * ray.getDirection() * centerMinusRayOrigin,
+         c = centerMinusRayOrigin * centerMinusRayOrigin -
+             sphere.radius * sphere.radius;
+  double delta2 = b * b - 4 * a * c;
+  return delta2 >= 0;
+}
+
 color3 ray_color(Ray const &ray) {
-  vec3 unit_direction = unit_vector(ray.getDirection());
-  double yFromBottomToTop = 0.5 * (unit_direction.y + 1.0);
-  color3 blue(0.5, 0.7, 1.0), white(1.0, 1.0, 1.0);
-  return lerp(yFromBottomToTop, white, blue);
+  color3 result;
+  if (hit_sphere(ray, Sphere(point3(0, 0, -1), 0.5))) {
+    result = color3(1.0, 0.0, 0.0);
+  } else {
+    vec3 unit_direction = unit_vector(ray.getDirection());
+    double yFromBottomToTop = 0.5 * (unit_direction.y + 1.0);
+    color3 blue(0.5, 0.7, 1.0), white(1.0, 1.0, 1.0);
+    result = lerp(yFromBottomToTop, white, blue);
+  }
+  return result;
 }
 
 int main() {
