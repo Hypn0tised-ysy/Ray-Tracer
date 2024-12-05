@@ -1,19 +1,14 @@
+#include "color.h"
+#include "common.h"
+
 #include <cassert>
-#include <iostream>
+#include <memory>
 #include <ostream>
 
-#include "color.h"
-#include "ray.h"
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
 #include "vec3.h"
-
-struct Sphere {
-  Sphere(point3 const &center, double radius)
-      : center(center), radius(radius) {}
-  point3 center;
-  double radius;
-};
-
-Sphere const sphere(point3(0.0, 0.0, -1.0), 0.5);
 
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
@@ -23,24 +18,7 @@ toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
   return blendValue;
 }
 
-double hit_sphere(Ray const &ray, Sphere const &sphere) {
-  // 判断光线与球体是否相交只需求解一个一元二次方程组
-  vec3 centerMinusRayOrigin = sphere.center - ray.getOrigin();
-  double a = ray.getDirection() * ray.getDirection(),
-         b = -2.0 * ray.getDirection() * centerMinusRayOrigin,
-         c = centerMinusRayOrigin * centerMinusRayOrigin -
-             sphere.radius * sphere.radius;
-  double delta2 = b * b - 4 * a * c;
-  double factorOfDirection;
-  if (delta2 < 0.0)
-    factorOfDirection = -1.0;
-  else
-    factorOfDirection = (-b - sqrt(delta2)) / (2.0 * a);
-  ;
-  return factorOfDirection;
-}
-
-color3 backgroud_color(Ray const &ray) {
+color3 background_color(Ray const &ray) {
   color3 result;
   vec3 unit_direction = unit_vector(ray.getDirection());
   double yFromBottomToTop = 0.5 * (unit_direction.y + 1.0);
@@ -49,23 +27,12 @@ color3 backgroud_color(Ray const &ray) {
   return result;
 }
 
-color3 sphere_color(Ray const &ray, double factorOfDirection) {
-  vec3 hit_point = ray.at(factorOfDirection);
-  vec3 normal = unit_vector(hit_point - sphere.center);
-  // map normal's coordinate to color value
-  color3 result = color3(0.5 * (normal.x + 1.0), 0.5 * (normal.y + 1.0),
-                         0.5 * (normal.z + 1.0));
-  return result;
-}
-
-color3 ray_color(Ray const &ray) {
-  color3 result;
-  double factorOfDirection = hit_sphere(ray, sphere);
-  if (factorOfDirection > 0.0)
-    result = sphere_color(ray, factorOfDirection);
-  else
-    result = backgroud_color(ray);
-  return result;
+color3 ray_color(Ray const &ray, hittable const &world_objects) {
+  hit_record record;
+  if (world_objects.hit(ray, 0.0, Infinity, record)) {
+    return 0.5 * (record.normalAgainstRay + color3(1.0, 1.0, 1.0));
+  } else
+    return background_color(ray);
 }
 
 int main() {
@@ -92,6 +59,11 @@ int main() {
   point3 viewport_00_pixel_position =
       viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
+  // world objects
+  hittable_list world_objects;
+  world_objects.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5));
+  world_objects.add(std::make_shared<sphere>(point3(0.0, -100.5, -1), 100));
+
   // render
   std::cout << "P3\n" << WIDTH_IMAGE << " " << HEIGHT_IMAGE << "\n255\n";
 
@@ -102,7 +74,8 @@ int main() {
           viewport_00_pixel_position + x * pixel_delta_u + y * pixel_delta_v;
       vec3 ray_direction = pixel_center - camera_center;
       Ray ray(camera_center, ray_direction);
-      color3 pixel_color = ray_color(ray);
+
+      color3 pixel_color = ray_color(ray, world_objects);
       write_color(std::cout, pixel_color);
     }
   }

@@ -33,6 +33,8 @@ public:
     return element[ith_element];
   }
 
+  vec3 operator-() const { return vec3(-x, -y, -z); }
+
   vec3 &operator+=(vec3 const &vectorToAdd) {
     x += vectorToAdd.x;
     y += vectorToAdd.y;

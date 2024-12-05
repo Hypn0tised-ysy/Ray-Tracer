@@ -1,6 +1,8 @@
 CMakeFiles/inOneWeekend.dir/src/InOneWeekend/main.cpp.o: \
  /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/main.cpp \
- /usr/include/stdc-predef.h /usr/include/c++/11/cassert \
+ /usr/include/stdc-predef.h \
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/color.h \
+ /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -11,7 +13,6 @@ CMakeFiles/inOneWeekend.dir/src/InOneWeekend/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/cpu_defines.h \
- /usr/include/assert.h /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/iosfwd /usr/include/c++/11/bits/stringfwd.h \
  /usr/include/c++/11/bits/memoryfwd.h /usr/include/c++/11/bits/postypes.h \
@@ -150,8 +151,8 @@ CMakeFiles/inOneWeekend.dir/src/InOneWeekend/main.cpp.o: \
  /usr/include/c++/11/bits/basic_ios.tcc \
  /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
  /usr/include/c++/11/bits/istream.tcc \
- /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/color.h \
  /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/vec3.h \
+ /usr/include/c++/11/cassert /usr/include/assert.h \
  /usr/include/c++/11/cmath /usr/include/math.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
@@ -162,4 +163,34 @@ CMakeFiles/inOneWeekend.dir/src/InOneWeekend/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
- /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/ray.h
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/common.h \
+ /usr/include/c++/11/limits /usr/include/c++/11/memory \
+ /usr/include/c++/11/bits/stl_uninitialized.h \
+ /usr/include/c++/11/bits/stl_tempbuf.h \
+ /usr/include/c++/11/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
+ /usr/include/c++/11/bits/uses_allocator.h \
+ /usr/include/c++/11/bits/unique_ptr.h /usr/include/c++/11/utility \
+ /usr/include/c++/11/bits/stl_relops.h /usr/include/c++/11/tuple \
+ /usr/include/c++/11/array /usr/include/c++/11/bits/invoke.h \
+ /usr/include/c++/11/bits/shared_ptr.h \
+ /usr/include/c++/11/bits/shared_ptr_base.h \
+ /usr/include/c++/11/bits/allocated_ptr.h \
+ /usr/include/c++/11/bits/refwrap.h \
+ /usr/include/c++/11/ext/aligned_buffer.h \
+ /usr/include/c++/11/ext/concurrence.h \
+ /usr/include/c++/11/bits/shared_ptr_atomic.h \
+ /usr/include/c++/11/bits/atomic_base.h \
+ /usr/include/c++/11/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/11/backward/auto_ptr.h \
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/ray.h \
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/hittable.h \
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/hittable_list.h \
+ /usr/include/c++/11/vector /usr/include/c++/11/bits/stl_vector.h \
+ /usr/include/c++/11/bits/stl_bvector.h \
+ /usr/include/c++/11/bits/vector.tcc \
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/sphere.h \
+ /usr/include/c++/11/algorithm /usr/include/c++/11/bits/stl_algo.h \
+ /usr/include/c++/11/bits/algorithmfwd.h \
+ /usr/include/c++/11/bits/stl_heap.h \
+ /usr/include/c++/11/bits/uniform_int_dist.h
