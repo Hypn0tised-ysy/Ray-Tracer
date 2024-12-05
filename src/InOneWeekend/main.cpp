@@ -13,6 +13,8 @@ struct Sphere {
   double radius;
 };
 
+Sphere const sphere(point3(0.0, 0.0, -1.0), 0.5);
+
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
   assert(fromStartToEnd >= 0.0 && fromStartToEnd <= 1.0);
@@ -21,7 +23,7 @@ toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
   return blendValue;
 }
 
-bool hit_sphere(Ray const &ray, Sphere const &sphere) {
+double hit_sphere(Ray const &ray, Sphere const &sphere) {
   // 判断光线与球体是否相交只需求解一个一元二次方程组
   vec3 centerMinusRayOrigin = sphere.center - ray.getOrigin();
   double a = ray.getDirection() * ray.getDirection(),
@@ -29,19 +31,40 @@ bool hit_sphere(Ray const &ray, Sphere const &sphere) {
          c = centerMinusRayOrigin * centerMinusRayOrigin -
              sphere.radius * sphere.radius;
   double delta2 = b * b - 4 * a * c;
-  return delta2 >= 0;
+  double factorOfDirection;
+  if (delta2 < 0.0)
+    factorOfDirection = -1.0;
+  else
+    factorOfDirection = (-b - sqrt(delta2)) / (2.0 * a);
+  ;
+  return factorOfDirection;
+}
+
+color3 backgroud_color(Ray const &ray) {
+  color3 result;
+  vec3 unit_direction = unit_vector(ray.getDirection());
+  double yFromBottomToTop = 0.5 * (unit_direction.y + 1.0);
+  color3 blue(0.5, 0.7, 1.0), white(1.0, 1.0, 1.0);
+  result = lerp(yFromBottomToTop, white, blue);
+  return result;
+}
+
+color3 sphere_color(Ray const &ray, double factorOfDirection) {
+  vec3 hit_point = ray.at(factorOfDirection);
+  vec3 normal = unit_vector(hit_point - sphere.center);
+  // map normal's coordinate to color value
+  color3 result = color3(0.5 * (normal.x + 1.0), 0.5 * (normal.y + 1.0),
+                         0.5 * (normal.z + 1.0));
+  return result;
 }
 
 color3 ray_color(Ray const &ray) {
   color3 result;
-  if (hit_sphere(ray, Sphere(point3(0, 0, -1), 0.5))) {
-    result = color3(1.0, 0.0, 0.0);
-  } else {
-    vec3 unit_direction = unit_vector(ray.getDirection());
-    double yFromBottomToTop = 0.5 * (unit_direction.y + 1.0);
-    color3 blue(0.5, 0.7, 1.0), white(1.0, 1.0, 1.0);
-    result = lerp(yFromBottomToTop, white, blue);
-  }
+  double factorOfDirection = hit_sphere(ray, sphere);
+  if (factorOfDirection > 0.0)
+    result = sphere_color(ray, factorOfDirection);
+  else
+    result = backgroud_color(ray);
   return result;
 }
 

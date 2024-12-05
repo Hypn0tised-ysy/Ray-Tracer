@@ -12,7 +12,7 @@ public:
   Ray(point3 const &_origin, vec3 const &_direction)
       : origin(_origin), direction(_direction){};
 
-  point3 at(double factorOfDirection) {
+  point3 at(double factorOfDirection) const {
     return origin + factorOfDirection * direction;
   }
 
