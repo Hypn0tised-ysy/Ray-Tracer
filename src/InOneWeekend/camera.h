@@ -23,13 +23,10 @@ color3 background_color(Ray const &ray) {
   result = lerp(yFromBottomToTop, white, blue);
   return result;
 }
-
-color3 normal_color(Ray const &ray, hit_record &record) {
-  return 0.5 * (record.normalAgainstRay + color3(1.0, 1.0, 1.0));
-}
-
 class Camera {
 public:
+  friend color3 diffuse_color(const Ray &ray, hit_record &record,
+                              const hittable &world_objects);
   double aspect_ratio = 1.0;
   int image_width = 100;
   int sample_per_pixel = 10;
@@ -92,9 +89,19 @@ private:
   color3 ray_color(Ray const &ray, hittable const &world_objects) {
     hit_record record;
     if (world_objects.hit(ray, interval(0.0, Infinity_double), record)) {
-      return normal_color(ray, record);
+      return diffuse_color(ray, record, world_objects);
     } else
       return background_color(ray);
+  }
+
+  color3 diffuse_color(Ray const &ray, hit_record &record,
+                       hittable const &world_objects) {
+    double diffuse_coefficient = 0.5;
+    vec3 diffuse_direction = generate_random_diffused_unitVector_onHemisphere(
+        record.normalAgainstRay);
+    Ray diffuse_ray(record.hitPoint, diffuse_direction);
+    color3 diffuse_color = ray_color(diffuse_ray, world_objects);
+    return diffuse_coefficient * diffuse_color;
   }
 
   Ray getSampleRay(int x, int y) const {

@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "interval.h"
+#include "ray.h"
 
 class hit_record {
 public:

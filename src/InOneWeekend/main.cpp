@@ -1,5 +1,4 @@
 #include "camera.h"
-#include "common.h"
 
 #include <cassert>
 #include <cmath>
