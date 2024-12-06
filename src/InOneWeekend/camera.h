@@ -92,7 +92,7 @@ private:
     if (depth <= 0)
       return color3(0, 0, 0);
     hit_record record;
-    if (world_objects.hit(ray, interval(0.0, Infinity_double), record)) {
+    if (world_objects.hit(ray, interval(0.001, Infinity_double), record)) {
       return diffuse_color(ray, depth, record, world_objects);
     } else
       return background_color(ray);
