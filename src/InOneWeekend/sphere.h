@@ -2,14 +2,10 @@
 #define SPHERE_H
 
 #include "hittable.h"
+#include "interval.h"
 #include "vec3.h"
 #include <algorithm>
 #include <cmath>
-
-bool clamp(double min, double max, double value) {
-  return value <= min || value >= max;
-}
-
 class sphere : public hittable {
 public:
   sphere(point3 const &_center, double _radius)
@@ -25,8 +21,7 @@ public:
     return record;
   }
 
-  virtual bool hit(const Ray &ray, double min_factorOfDirection,
-                   double max_factorOfDirection,
+  virtual bool hit(const Ray &ray, interval ray_range,
                    hit_record &record) const override {
     // solve quadratic formula
     vec3 centerMinusRayOrigin = center - ray.getOrigin();
@@ -41,11 +36,9 @@ public:
 
     double delta2_sqrt = std::sqrt(delta2);
     factorOfDirection = (negative_half_b - delta2_sqrt) / a;
-    if (clamp(min_factorOfDirection, max_factorOfDirection,
-              factorOfDirection)) {
+    if (!ray_range.surroud(factorOfDirection)) {
       factorOfDirection = (negative_half_b + delta2_sqrt) / a;
-      if (clamp(min_factorOfDirection, max_factorOfDirection,
-                factorOfDirection))
+      if (!ray_range.surroud(factorOfDirection))
         return false;
     }
 

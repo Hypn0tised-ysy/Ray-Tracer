@@ -2,11 +2,13 @@
 #include "common.h"
 
 #include <cassert>
+#include <cmath>
 #include <memory>
 #include <ostream>
 
 #include "hittable.h"
 #include "hittable_list.h"
+#include "interval.h"
 #include "sphere.h"
 #include "vec3.h"
 
@@ -29,7 +31,7 @@ color3 background_color(Ray const &ray) {
 
 color3 ray_color(Ray const &ray, hittable const &world_objects) {
   hit_record record;
-  if (world_objects.hit(ray, 0.0, Infinity, record)) {
+  if (world_objects.hit(ray, interval(0.0, Infinity_double), record)) {
     return 0.5 * (record.normalAgainstRay + color3(1.0, 1.0, 1.0));
   } else
     return background_color(ray);

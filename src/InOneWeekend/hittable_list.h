@@ -2,6 +2,7 @@
 #define HITTABLE_LIST_H
 
 #include "hittable.h"
+#include "interval.h"
 #include "ray.h"
 
 #include <memory>
@@ -21,16 +22,14 @@ public:
 
   void add(shared_ptr<hittable> object) { objects.push_back(object); }
 
-  bool hit(Ray const &ray, double min_factorOfDirection,
-           double max_factorOfDirection, hit_record &record) const override {
+  bool hit(Ray const &ray, interval ray_range,
+           hit_record &record) const override {
     hit_record temp_record;
     bool hit_anything = false;
-    double closest_so_far = max_factorOfDirection;
     for (const auto &object : objects) {
-      if (object->hit(ray, min_factorOfDirection, closest_so_far,
-                      temp_record)) {
+      if (object->hit(ray, ray_range, temp_record)) {
         hit_anything = true;
-        closest_so_far = temp_record.factorOfDirection;
+        ray_range.max = temp_record.factorOfDirection;
         record = temp_record;
       }
     }

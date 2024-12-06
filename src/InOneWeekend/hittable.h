@@ -1,8 +1,8 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
-#include "ray.h"
-#include "vec3.h"
+#include "common.h"
+#include "interval.h"
 
 class hit_record {
 public:
@@ -18,8 +18,8 @@ public:
 
 class hittable {
 public:
-  virtual bool hit(const Ray &ray, double min_factorOfDirection,
-                   double max_factorOfDirection, hit_record &record) const = 0;
+  virtual bool hit(const Ray &ray, interval ray_range,
+                   hit_record &record) const = 0;
   virtual ~hittable() = default;
 };
 

@@ -183,6 +183,7 @@ CMakeFiles/inOneWeekend.dir/src/InOneWeekend/main.cpp.o: \
  /usr/include/c++/11/bits/atomic_base.h \
  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
  /usr/include/c++/11/backward/auto_ptr.h \
+ /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/interval.h \
  /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/ray.h \
  /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/hittable.h \
  /home/hypnotised/Desktop/projects/myRayTracingInOneWeekend/src/InOneWeekend/hittable_list.h \
