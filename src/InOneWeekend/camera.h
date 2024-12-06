@@ -30,6 +30,7 @@ public:
   double aspect_ratio = 1.0;
   int image_width = 100;
   int sample_per_pixel = 10;
+  int max_depth = 10;
 
   void render(hittable const &world_objects) {
     initialize();
@@ -42,7 +43,8 @@ public:
         for (int ith_sample_ray = 0; ith_sample_ray < sample_per_pixel;
              ith_sample_ray++) {
           Ray sampleRay = getSampleRay(x, y);
-          color3 sample_pixel_color = ray_color(sampleRay, world_objects);
+          color3 sample_pixel_color =
+              ray_color(sampleRay, max_depth, world_objects);
           pixel_color += sample_pixel_color;
         }
 
@@ -86,21 +88,23 @@ private:
         viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
   }
 
-  color3 ray_color(Ray const &ray, hittable const &world_objects) {
+  color3 ray_color(Ray const &ray, int depth, hittable const &world_objects) {
+    if (depth <= 0)
+      return color3(0, 0, 0);
     hit_record record;
     if (world_objects.hit(ray, interval(0.0, Infinity_double), record)) {
-      return diffuse_color(ray, record, world_objects);
+      return diffuse_color(ray, depth, record, world_objects);
     } else
       return background_color(ray);
   }
 
-  color3 diffuse_color(Ray const &ray, hit_record &record,
+  color3 diffuse_color(Ray const &ray, int depth, hit_record &record,
                        hittable const &world_objects) {
     double diffuse_coefficient = 0.5;
     vec3 diffuse_direction = generate_random_diffused_unitVector_onHemisphere(
         record.normalAgainstRay);
     Ray diffuse_ray(record.hitPoint, diffuse_direction);
-    color3 diffuse_color = ray_color(diffuse_ray, world_objects);
+    color3 diffuse_color = ray_color(diffuse_ray, depth - 1, world_objects);
     return diffuse_coefficient * diffuse_color;
   }
 
