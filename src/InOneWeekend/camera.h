@@ -1,8 +1,11 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "color.h"
 #include "common.h"
 #include "hittable.h"
+#include "ray.h"
+#include "vec3.h"
 
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
@@ -29,6 +32,7 @@ class Camera {
 public:
   double aspect_ratio = 1.0;
   int image_width = 100;
+  int sample_per_pixel = 10;
 
   void render(hittable const &world_objects) {
     initialize();
@@ -37,15 +41,19 @@ public:
     for (int y = 0; y < image_height; y++) {
       std::clog << "\rScanlines remaining: " << image_height - y << std::flush;
       for (int x = 0; x < image_width; x++) {
-        point3 pixel_center =
-            viewport_00_pixel_position + x * pixel_delta_u + y * pixel_delta_v;
-        vec3 ray_direction = pixel_center - center;
-        Ray ray(center, ray_direction);
+        color3 pixel_color(0, 0, 0);
+        for (int ith_sample_ray = 0; ith_sample_ray < sample_per_pixel;
+             ith_sample_ray++) {
+          Ray sampleRay = getSampleRay(x, y);
+          color3 sample_pixel_color = ray_color(sampleRay, world_objects);
+          pixel_color += sample_pixel_color;
+        }
 
-        color3 pixel_color = ray_color(ray, world_objects);
+        pixel_color *= sample_scale;
         write_color(std::cout, pixel_color);
       }
     }
+
     std::clog << "\rDone  \n";
   }
 
@@ -54,8 +62,11 @@ private:
   point3 center;
   point3 viewport_00_pixel_position;
   vec3 pixel_delta_u, pixel_delta_v;
+  double sample_scale;
 
   void initialize() {
+    sample_scale = 1.0 / sample_per_pixel;
+
     // image
     image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
@@ -84,6 +95,21 @@ private:
       return normal_color(ray, record);
     } else
       return background_color(ray);
+  }
+
+  Ray getSampleRay(int x, int y) const {
+    vec3 offset = sample_square();
+    point3 sample_pixel_center = viewport_00_pixel_position +
+                                 (x + offset.x) * pixel_delta_u +
+                                 (y + offset.y) * pixel_delta_v;
+    vec3 ray_direction = sample_pixel_center - center;
+    Ray sample_ray(center, ray_direction);
+    return sample_ray;
+  }
+
+  vec3 sample_square() const {
+    vec3 offset(random_double(-0.5, 0.5), random_double(-0.5, 0.5), 0.0);
+    return offset;
   }
 };
 
