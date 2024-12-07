@@ -101,8 +101,8 @@ private:
   color3 diffuse_color(Ray const &ray, int depth, hit_record &record,
                        hittable const &world_objects) {
     double diffuse_coefficient = 0.5;
-    vec3 diffuse_direction = generate_random_diffused_unitVector_onHemisphere(
-        record.normalAgainstRay);
+    vec3 diffuse_direction = unit_vector(record.normalAgainstRay +
+                                         generate_random_diffused_unitVector());
     Ray diffuse_ray(record.hitPoint, diffuse_direction);
     color3 diffuse_color = ray_color(diffuse_ray, depth - 1, world_objects);
     return diffuse_coefficient * diffuse_color;
