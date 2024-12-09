@@ -40,18 +40,22 @@ private:
 
 class metal : public Material {
 public:
-  metal(color3 const &albedo) : albedo(albedo) {}
+  metal(color3 const &albedo, double fuzziness)
+      : albedo(albedo), fuzziness(fuzziness) {}
 
   bool Scatter(const Ray &ray_in, const hit_record &record, color3 &attenuation,
                Ray &scattered) const override {
-    vec3 reflected =
-        reflect(unit_vector(ray_in.getDirection()), record.normalAgainstRay);
+    vec3 reflected = unit_vector(
+        reflect(unit_vector(ray_in.getDirection()), record.normalAgainstRay));
+    reflected = unit_vector(reflected +
+                            fuzziness * generate_random_diffused_unitVector());
     scattered = Ray(record.hitPoint, reflected);
     attenuation = albedo;
-    return true;
+    return (scattered.getDirection() * record.normalAgainstRay > 0);
   }
 
 private:
   color3 albedo;
+  double fuzziness;
 };
 #endif // MATERIAL_H
