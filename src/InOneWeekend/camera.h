@@ -4,6 +4,7 @@
 #include "color.h"
 #include "common.h"
 #include "hittable.h"
+#include "material.h"
 #include "ray.h"
 #include "vec3.h"
 
@@ -93,19 +94,22 @@ private:
       return color3(0, 0, 0);
     hit_record record;
     if (world_objects.hit(ray, interval(0.001, Infinity_double), record)) {
-      return diffuse_color(ray, depth, record, world_objects);
+      return scattered_color(ray, depth, record, world_objects);
     } else
       return background_color(ray);
   }
 
-  color3 diffuse_color(Ray const &ray, int depth, hit_record &record,
-                       hittable const &world_objects) {
-    double diffuse_coefficient = 0.5;
-    vec3 diffuse_direction = unit_vector(record.normalAgainstRay +
-                                         generate_random_diffused_unitVector());
-    Ray diffuse_ray(record.hitPoint, diffuse_direction);
-    color3 diffuse_color = ray_color(diffuse_ray, depth - 1, world_objects);
-    return diffuse_coefficient * diffuse_color;
+  color3 scattered_color(Ray const &ray, int depth, hit_record &record,
+                         hittable const &world_objects) {
+    color3 attenuation;
+    Ray scattered_ray;
+    color3 result(0, 0, 0);
+    if (record.material->Scatter(ray, record, attenuation, scattered_ray)) {
+      color3 scattered_color =
+          ray_color(scattered_ray, depth - 1, world_objects);
+      result = cwiseProduct(attenuation, scattered_color);
+    }
+    return result;
   }
 
   Ray getSampleRay(int x, int y) const {

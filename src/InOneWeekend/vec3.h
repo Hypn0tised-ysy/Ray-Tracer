@@ -30,6 +30,12 @@ public:
   double norm() const { return std::sqrt(norm_square()); };
   double norm_square() const { return x * x + y * y + z * z; }
 
+  bool nearZero() {
+    double epsilon = 1e-8;
+    return (std::fabs(x) < epsilon) && (std::fabs(y) < epsilon) &&
+           (std::fabs(z) < epsilon);
+  }
+
   static vec3 generate_random_vector() {
     return vec3(random_double(), random_double(), random_double());
   }
@@ -136,6 +142,14 @@ vec3 generate_random_diffused_unitVector_onHemisphere(
   randomVector =
       randomVector * normalAgainstRay > 0.0 ? randomVector : -randomVector;
   return randomVector;
+}
+
+vec3 project(vec3 const &a, vec3 const &ontoB) {
+  return (a * ontoB / ontoB.norm_square()) * ontoB;
+}
+
+vec3 reflect(vec3 const &incidentRay, vec3 const &normal) {
+  return incidentRay - 2 * project(incidentRay, normal);
 }
 
 #endif
