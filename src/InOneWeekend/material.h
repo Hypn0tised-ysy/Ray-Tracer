@@ -5,6 +5,7 @@
 #include "hittable.h"
 #include "ray.h"
 #include "vec3.h"
+#include <cmath>
 
 class Material {
 public:
@@ -69,15 +70,37 @@ public:
     double etaIncidentOverEtaRefract =
         record.frontFace ? 1.0 / refraction_index : refraction_index;
 
-    vec3 refracted = refract(ray_in.getDirection(), record.normalAgainstRay,
-                             etaIncidentOverEtaRefract);
+    vec3 scattered_direction;
+    if (isTotalInternalReflection(ray_in, record)) {
+      // reflect
+      scattered_direction =
+          reflect(ray_in.getDirection(), record.normalAgainstRay);
+    } else {
+      // can refract
+      scattered_direction =
+          refract(ray_in.getDirection(), record.normalAgainstRay,
+                  etaIncidentOverEtaRefract);
+    }
 
-    scattered = Ray(record.hitPoint, refracted);
+    scattered = Ray(record.hitPoint, scattered_direction);
     return true;
   }
 
 private:
   double refraction_index;
+  bool isTotalInternalReflection(Ray const &ray_in,
+                                 hit_record const &record) const {
+    double etaIncidentOverEtaRefract =
+        record.frontFace ? 1.0 / refraction_index : refraction_index;
+
+    vec3 unit_direction = unit_vector(ray_in.getDirection());
+    vec3 unit_normal = unit_vector(record.normalAgainstRay);
+
+    double cos_theta = std::fmin(-unit_direction * unit_normal, 1.0);
+    double sin_theta = std::sqrt(1 - cos_theta * cos_theta);
+
+    return etaIncidentOverEtaRefract * sin_theta > 1.0;
+  }
 };
 
 #endif // MATERIAL_H
