@@ -152,4 +152,15 @@ vec3 reflect(vec3 const &incidentRay, vec3 const &normal) {
   return incidentRay - 2 * project(incidentRay, normal);
 }
 
+vec3 refract(vec3 const &incidentDirection, vec3 const &normal,
+             double etaIncidentOverEtaRefract) {
+  vec3 a = unit_vector(incidentDirection), n = unit_vector(normal);
+  vec3 refract_n_parallel, refract_n_perpendicular;
+  double cos_theta = std::fmin(-(a * n), 1.0);
+  refract_n_perpendicular = etaIncidentOverEtaRefract * (a + cos_theta * n);
+  refract_n_parallel =
+      -std::sqrt(std::fabs(1 - refract_n_perpendicular.norm_square())) * n;
+  return refract_n_parallel + refract_n_perpendicular;
+}
+
 #endif
