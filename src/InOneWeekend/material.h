@@ -71,16 +71,16 @@ public:
         record.frontFace ? 1.0 / refraction_index : refraction_index;
 
     vec3 scattered_direction;
-    if (isTotalInternalReflection(ray_in, record)) {
-      // reflect
+    bool TIR = isTotalInternalReflection(ray_in, record);
+    // reflect
+    if (TIR || reflectance(ray_in, record) > random_double())
       scattered_direction =
           reflect(ray_in.getDirection(), record.normalAgainstRay);
-    } else {
-      // can refract
+    // refract
+    else
       scattered_direction =
           refract(ray_in.getDirection(), record.normalAgainstRay,
                   etaIncidentOverEtaRefract);
-    }
 
     scattered = Ray(record.hitPoint, scattered_direction);
     return true;
@@ -100,6 +100,19 @@ private:
     double sin_theta = std::sqrt(1 - cos_theta * cos_theta);
 
     return etaIncidentOverEtaRefract * sin_theta > 1.0;
+  }
+
+  double reflectance(const Ray &ray_in, const hit_record &record) const {
+    // Schlick's approximation for reflectance
+    vec3 unit_direction = unit_vector(ray_in.getDirection());
+    vec3 unit_normal = unit_vector(record.normalAgainstRay);
+    double cos_theta = -unit_direction * unit_normal;
+    double etaIncidentOverEtaRefract =
+        record.frontFace ? 1.0 / refraction_index : refraction_index;
+
+    auto r0 = (1 - etaIncidentOverEtaRefract) / (1 + etaIncidentOverEtaRefract);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * std::pow((1 - cos_theta), 5);
   }
 };
 
