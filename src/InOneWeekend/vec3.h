@@ -43,6 +43,13 @@ public:
     return vec3(random_double(min, max), random_double(min, max),
                 random_double(min, max));
   }
+  static vec3 generate_random_vector_onUnitDisk() {
+    while (true) {
+      vec3 randomVector = vec3(random_double(), random_double(), 0.0);
+      if (randomVector.norm_square() <= 1.0)
+        return randomVector;
+    }
+  }
 
   double operator[](int ith_element) const {
     assert(0 <= ith_element && ith_element <= 2);

@@ -38,6 +38,9 @@ public:
   int sample_per_pixel = 10;
   int max_depth = 10;
 
+  double focus_distance = 10;
+  double defocus_angle = 0;
+
   void render(hittable const &world_objects) {
     initialize();
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
@@ -68,6 +71,7 @@ private:
   point3 center;
   point3 viewport_00_pixel_position;
   vec3 pixel_delta_u, pixel_delta_v;
+  vec3 defocus_disk_u, defocus_disk_v;
   vec3 u, v, w; // w指向观测方向的反方向（右手系），u指向相机右侧，v指向相机上侧
   double sample_scale;
 
@@ -80,9 +84,8 @@ private:
 
     // camera
     center = lookfrom;
-    double focal_length = (lookat - lookfrom).norm();
     double theta = degrees_to_radians(vFov);
-    double height = focal_length * std::tan(theta / 2);
+    double height = focus_distance * std::tan(theta / 2);
     double viewport_height = 2 * height;
     double viewport_width =
         viewport_height * (double(image_width) / image_height);
@@ -91,13 +94,18 @@ private:
     u = unit_vector(crossProduct(up, w));
     v = unit_vector(crossProduct(w, u));
 
+    double defocus_disk_radius =
+        focus_distance * std::tan(degrees_to_radians(defocus_angle / 2));
+    defocus_disk_u = u * defocus_disk_radius;
+    defocus_disk_v = v * defocus_disk_radius;
+
     // viewport
     vec3 u_viewport = viewport_width * u;
     vec3 v_viewport = -(viewport_height * v);
     pixel_delta_u = u_viewport / image_width;
     pixel_delta_v = v_viewport / image_height;
     point3 viewport_upper_left =
-        center - focal_length * w - u_viewport / 2 - v_viewport / 2;
+        center - (focus_distance * w) - u_viewport / 2 - v_viewport / 2;
     viewport_00_pixel_position =
         viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
   }
@@ -130,14 +138,25 @@ private:
     point3 sample_pixel_center = viewport_00_pixel_position +
                                  (x + offset.x) * pixel_delta_u +
                                  (y + offset.y) * pixel_delta_v;
-    vec3 ray_direction = sample_pixel_center - center;
-    Ray sample_ray(center, ray_direction);
+    vec3 ray_origin = defocus_angle <= 0 ? center : sample_defocusDisk();
+    vec3 ray_direction = sample_pixel_center - ray_origin;
+    Ray sample_ray(ray_origin, ray_direction);
     return sample_ray;
   }
 
   vec3 sample_square() const {
     vec3 offset(random_double(-0.5, 0.5), random_double(-0.5, 0.5), 0.0);
     return offset;
+  }
+
+  point3 sample_defocusDisk() const {
+
+    vec3 random_distribution_onUnitDisk =
+        vec3::generate_random_vector_onUnitDisk();
+    point3 random_point_onDefocusDisk =
+        center + defocus_disk_u * random_distribution_onUnitDisk[0] +
+        defocus_disk_v * random_distribution_onUnitDisk[1];
+    return random_point_onDefocusDisk;
   }
 };
 

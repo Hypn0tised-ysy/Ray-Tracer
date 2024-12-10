@@ -58,7 +58,7 @@ Camera initialize_camera() {
   Camera camera;
 
   camera.aspect_ratio = 16.0 / 9.0;
-  camera.vFov = 90.0;
+  camera.vFov = 20;
   camera.image_width = 400;
   camera.sample_per_pixel = 100;
   camera.max_depth = 50;
@@ -66,6 +66,9 @@ Camera initialize_camera() {
   camera.lookfrom = point3(-2, 2, 1);
   camera.lookat = point3(0, 0, -1);
   camera.up = vec3(0, 1, 0);
+
+  camera.defocus_angle = 10.0;
+  camera.focus_distance = 3.4;
 
   return std::move(camera);
 }
