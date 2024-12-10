@@ -14,6 +14,7 @@
 #include "vec3.h"
 
 hittable_list initialize_world_object();
+void generate_random_world_objects(hittable_list &world_objects);
 Camera initialize_camera();
 
 int main() {
@@ -26,32 +27,58 @@ int main() {
 }
 
 hittable_list initialize_world_object() { // material
-  auto material_ground = std::make_shared<lambertian>(color3(0.8, 0.8, 0.0));
-  auto material_center_sphere = make_shared<lambertian>(color3(0.1, 0.2, 0.5));
-  auto material_left_sphere = make_shared<dielectric>(1.50);
-  auto material_left_sphere_bubble = make_shared<dielectric>(1 / 1.50);
-  auto material_right_sphere = make_shared<metal>(color3(0.8, 0.6, 0.2), 1.0);
+  auto material_ground = std::make_shared<lambertian>(color3(0.5, 0.5, 0.5));
+  auto dielectric_material = make_shared<dielectric>(1.5);
+  auto lambertian_material = make_shared<lambertian>(color3(0.4, 0.2, 0.1));
+  auto metal_material = make_shared<metal>(color3(0.7, 0.6, 0.5), 0.0);
 
-  // world objects
-  hittable_list world_objects;
   auto ground =
-      std::make_shared<sphere>(point3(0, -100.5, -1), 100, material_ground);
+      std::make_shared<sphere>(point3(0, -1000, -1), 1000, material_ground);
   auto center_sphere =
-      std::make_shared<sphere>(point3(0, 0, -1.2), 0.5, material_center_sphere);
+      make_shared<sphere>(point3(0, 1, 0), 1.0, dielectric_material);
   auto left_sphere =
-      std::make_shared<sphere>(point3(-1.0, 0, -1), 0.5, material_left_sphere);
-  auto left_sphere_bubble = std::make_shared<sphere>(
-      point3(-1.0, 0, -1), 0.4, material_left_sphere_bubble);
+      make_shared<sphere>(point3(-4.0, 1, 0), 1.0, lambertian_material);
   auto right_sphere =
-      std::make_shared<sphere>(point3(1.0, 0, -1), 0.5, material_right_sphere);
+      make_shared<sphere>(point3(4.0, 1, 0), 1.0, metal_material);
 
+  hittable_list world_objects;
   world_objects.add(ground);
   world_objects.add(center_sphere);
   world_objects.add(left_sphere);
-  world_objects.add(left_sphere_bubble);
   world_objects.add(right_sphere);
+  generate_random_world_objects(world_objects);
 
   return std::move(world_objects);
+}
+
+void generate_random_world_objects(hittable_list &world_objects) {
+  double radius = 0.2;
+  color3 albedo;
+
+  for (int x = -11; x < 11; x++) {
+    for (int z = -11; z < 11; z++) {
+      albedo = cwiseProduct(color3::generate_random_vector(),
+                            color3::generate_random_vector());
+      double choose_material = random_double();
+      point3 sphere_center =
+          point3(x + 0.9 * random_double(), 0.2, z + 0.9 * random_double());
+      std::shared_ptr<Material> sphere_material;
+      std::shared_ptr<sphere> random_sphere;
+      if ((sphere_center - vec3(4, 0.2, 0)).norm() > 0.9) {
+        if (choose_material < 0.8) {
+          sphere_material = make_shared<lambertian>(albedo);
+        } else if (choose_material < 0.95) {
+          double fuzz = random_double(0, 0.5);
+          sphere_material = make_shared<metal>(albedo, fuzz);
+        } else {
+          sphere_material = make_shared<dielectric>(1.5);
+        }
+        random_sphere =
+            make_shared<sphere>(sphere_center, radius, sphere_material);
+        world_objects.add(random_sphere);
+      }
+    }
+  }
 }
 
 Camera initialize_camera() {
@@ -59,16 +86,16 @@ Camera initialize_camera() {
 
   camera.aspect_ratio = 16.0 / 9.0;
   camera.vFov = 20;
-  camera.image_width = 400;
-  camera.sample_per_pixel = 100;
+  camera.image_width = 1200;
+  camera.sample_per_pixel = 500;
   camera.max_depth = 50;
 
-  camera.lookfrom = point3(-2, 2, 1);
-  camera.lookat = point3(0, 0, -1);
+  camera.lookfrom = point3(13, 2, 3);
+  camera.lookat = point3(0, 0, 0);
   camera.up = vec3(0, 1, 0);
 
-  camera.defocus_angle = 10.0;
-  camera.focus_distance = 3.4;
+  camera.defocus_angle = 0.6;
+  camera.focus_distance = 10.0;
 
   return std::move(camera);
 }
