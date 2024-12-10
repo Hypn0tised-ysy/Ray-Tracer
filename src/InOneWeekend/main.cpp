@@ -26,20 +26,32 @@ int main() {
 }
 
 hittable_list initialize_world_object() { // material
-  hittable_list world_object;
+  auto material_ground = std::make_shared<lambertian>(color3(0.8, 0.8, 0.0));
+  auto material_center_sphere = make_shared<lambertian>(color3(0.1, 0.2, 0.5));
+  auto material_left_sphere = make_shared<dielectric>(1.50);
+  auto material_left_sphere_bubble = make_shared<dielectric>(1 / 1.50);
+  auto material_right_sphere = make_shared<metal>(color3(0.8, 0.6, 0.2), 1.0);
 
-  double R = std::cos(PI / 4);
+  // world objects
+  hittable_list world_objects;
+  auto ground =
+      std::make_shared<sphere>(point3(0, -100.5, -1), 100, material_ground);
+  auto center_sphere =
+      std::make_shared<sphere>(point3(0, 0, -1.2), 0.5, material_center_sphere);
+  auto left_sphere =
+      std::make_shared<sphere>(point3(-1.0, 0, -1), 0.5, material_left_sphere);
+  auto left_sphere_bubble = std::make_shared<sphere>(
+      point3(-1.0, 0, -1), 0.4, material_left_sphere_bubble);
+  auto right_sphere =
+      std::make_shared<sphere>(point3(1.0, 0, -1), 0.5, material_right_sphere);
 
-  auto material_left = make_shared<lambertian>(color3(0, 0, 1));
-  auto material_right = make_shared<lambertian>(color3(1, 0, 0));
+  world_objects.add(ground);
+  world_objects.add(center_sphere);
+  world_objects.add(left_sphere);
+  world_objects.add(left_sphere_bubble);
+  world_objects.add(right_sphere);
 
-  auto left_sphere = make_shared<sphere>(point3(-R, 0, -1), R, material_left);
-  auto right_sphere = make_shared<sphere>(point3(R, 0, -1), R, material_right);
-
-  world_object.add(left_sphere);
-  world_object.add(right_sphere);
-
-  return std::move(world_object);
+  return std::move(world_objects);
 }
 
 Camera initialize_camera() {
@@ -50,6 +62,10 @@ Camera initialize_camera() {
   camera.image_width = 400;
   camera.sample_per_pixel = 100;
   camera.max_depth = 50;
+
+  camera.lookfrom = point3(-2, 2, 1);
+  camera.lookat = point3(0, 0, -1);
+  camera.up = vec3(0, 1, 0);
 
   return std::move(camera);
 }
