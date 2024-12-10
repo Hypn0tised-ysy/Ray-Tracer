@@ -7,6 +7,7 @@
 #include "material.h"
 #include "ray.h"
 #include "vec3.h"
+#include <cmath>
 
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
@@ -29,6 +30,7 @@ public:
   friend color3 diffuse_color(const Ray &ray, hit_record &record,
                               const hittable &world_objects);
   double aspect_ratio = 1.0;
+  double vFov = 90.0;
   int image_width = 100;
   int sample_per_pixel = 10;
   int max_depth = 10;
@@ -73,7 +75,9 @@ private:
 
     // camera
     double focal_length = 1.0;
-    double viewport_height = 2.0;
+    double theta = degrees_to_radians(vFov);
+    double height = focal_length * std::tan(theta / 2);
+    double viewport_height = 2 * height;
     double viewport_width =
         viewport_height * (double(image_width) / image_height);
     center = point3(0, 0, 0);
