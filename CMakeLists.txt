@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0...3.27.0)
 
-project("RayTracing in one weekend")
+project("RayTracing the next week")
 # C++ language standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,12 +8,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Source
 
-file(GLOB SOURCE_ONE_WEEKEND "src/InOneWeekend/*.cpp" "src/InOneWeekend/*.h")
+file(GLOB SOURCE_ONE_WEEKEND "src/nextWeek/*.cpp" "src/nextWeek/*.h")
 
 include_directories(src)
 
 # Executables
-add_executable(inOneWeekend ${EXTERNAL} ${SOURCE_ONE_WEEKEND}) 
+add_executable(nextWeek ${EXTERNAL} ${SOURCE_ONE_WEEKEND}) 
 
 # Specific compiler flags below. We're not going to add options for all possible compilers, but if
 # you're new to CMake (like we are), the following may be a helpful example if you're using a
