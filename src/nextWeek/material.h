@@ -27,9 +27,6 @@ public:
                Ray &scattered) const override {
     vec3 diffuse_direction = generate_diffuse_direction(record);
     scattered = Ray(record.hitPoint, diffuse_direction, ray_in.getTime());
-
-    // TO DO:the take-in argument is meant to be record.textureCoordinate, need
-    // to calculate texture coordinate on each ray-object hit
     attenuation = tex->value(texture_coordinate(0, 0, record.hitPoint));
     return true;
   }
