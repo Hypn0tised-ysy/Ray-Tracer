@@ -5,16 +5,18 @@
 #include "common.h"
 #include "interval.h"
 #include "ray.h"
+#include "texture.h"
 #include <memory>
 
 class Material;
 class hit_record {
 public:
   double factorOfDirection;
+  bool frontFace;
   point3 hitPoint;
   vec3 normalAgainstRay;
   std::shared_ptr<Material> material;
-  bool frontFace;
+  texture_coordinate textureCoordinate;
 
   void set_surface_normal(const Ray &ray, const vec3 &unitOutwardNormal) {
     frontFace = ray.getDirection() * unitOutwardNormal < 0;

@@ -2,10 +2,13 @@
 #define MATERIAL_H
 
 #include "color.h"
+#include "common.h"
 #include "hittable.h"
 #include "ray.h"
+#include "texture.h"
 #include "vec3.h"
 #include <cmath>
+#include <memory>
 
 class Material {
 public:
@@ -17,18 +20,22 @@ public:
 
 class lambertian : public Material {
 public:
-  lambertian(const color3 &albedo) : albedo(albedo) {}
+  lambertian(const color3 &albedo) : tex(make_shared<solid_color>(albedo)) {}
+  lambertian(shared_ptr<texture> const &tex) : tex(tex) {}
 
   bool Scatter(const Ray &ray_in, const hit_record &record, color3 &attenuation,
                Ray &scattered) const override {
     vec3 diffuse_direction = generate_diffuse_direction(record);
     scattered = Ray(record.hitPoint, diffuse_direction, ray_in.getTime());
-    attenuation = albedo;
+
+    // TO DO:the take-in argument is meant to be record.textureCoordinate, need
+    // to calculate texture coordinate on each ray-object hit
+    attenuation = tex->value(texture_coordinate(0, 0, record.hitPoint));
     return true;
   }
 
 private:
-  color3 albedo;
+  shared_ptr<texture> tex;
 
   vec3 generate_diffuse_direction(const hit_record &record) const {
     vec3 diffuse_direction =

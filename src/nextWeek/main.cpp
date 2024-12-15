@@ -28,11 +28,17 @@ int main() {
 }
 
 hittable_list initialize_world_object() { // material
-  auto material_ground = std::make_shared<lambertian>(color3(0.5, 0.5, 0.5));
+  // texture
+  auto checker = make_shared<checker_texture>(0.32, color3(0.2, 0.3, 0.1),
+                                              color3(0.9, 0.9, 0.9));
+
+  // material
+  auto material_ground = make_shared<lambertian>(checker);
   auto dielectric_material = make_shared<dielectric>(1.5);
-  auto lambertian_material = make_shared<lambertian>(color3(0.4, 0.2, 0.1));
+  auto lambertian_material = make_shared<lambertian>(checker);
   auto metal_material = make_shared<metal>(color3(0.7, 0.6, 0.5), 0.0);
 
+  // object
   auto ground =
       std::make_shared<sphere>(point3(0, -1000, -1), 1000, material_ground);
   auto center_sphere =
@@ -42,6 +48,7 @@ hittable_list initialize_world_object() { // material
   auto right_sphere =
       make_shared<sphere>(point3(4.0, 1, 0), 1.0, metal_material);
 
+  //
   hittable_list world_objects;
   world_objects.add(ground);
   world_objects.add(center_sphere);
