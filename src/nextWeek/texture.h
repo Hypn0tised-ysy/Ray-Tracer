@@ -3,6 +3,7 @@
 
 #include "color.h"
 #include "common.h"
+#include "rtw_image.h"
 #include "vec3.h"
 #include <cmath>
 
@@ -11,6 +12,8 @@ public:
   texture_coordinate() {}
   texture_coordinate(double u, double v, point3 const &point)
       : u(u), v(v), point(point) {}
+  texture_coordinate(point3 const &point) : u(0), v(0), point(point) {}
+
   double u, v;
   point3 point;
 };
@@ -62,6 +65,29 @@ private:
   double scale;
   shared_ptr<solid_color> even;
   shared_ptr<solid_color> odd;
+};
+
+class image_texture : public texture {
+public:
+  image_texture(const char *filename) : image(filename) {}
+
+  color3 value(texture_coordinate const &tex_coordinate) const override {
+    if (image.height() <= 0)
+      return color3(0, 1, 1);
+
+    double u = interval(0, 1).clamp(tex_coordinate.u);
+    double v = 1.0 - interval(0, 1).clamp(tex_coordinate.v);
+
+    auto x = int(u * image.width());
+    auto y = int(v * image.height());
+    auto pixel = image.pixel_data(x, y);
+
+    auto color_scale = 1.0 / 255.0;
+    return color_scale * color3(pixel[0], pixel[1], pixel[2]);
+  }
+
+private:
+  rtw_image image;
 };
 
 #endif // TEXTURE_H

@@ -6,6 +6,7 @@
 #include "interval.h"
 #include "moving_center.h"
 #include "ray.h"
+#include "texture.h"
 #include "vec3.h"
 
 #include <algorithm>
@@ -43,6 +44,9 @@ public:
         (record.hitPoint - center.at(ray.getTime())) / radius;
     record.set_surface_normal(ray, unitOutwardNormal);
 
+    record.textureCoordinate.point = record.normalAgainstRay;
+    get_sphere_uv(record.textureCoordinate);
+
     return record;
   }
 
@@ -58,6 +62,17 @@ public:
 
     return false;
   };
+
+  static void get_sphere_uv(texture_coordinate &tex_coordinate) {
+    auto point = tex_coordinate.point;
+
+    // sphere coordinate base
+    auto theta = std::acos(-point.y);
+    auto phi = std::atan2(-point.z, point.x) + PI;
+
+    tex_coordinate.u = phi / (2 * PI);
+    tex_coordinate.v = theta / PI;
+  }
 
 private:
   moving_center center;

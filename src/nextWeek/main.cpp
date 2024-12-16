@@ -16,24 +16,28 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
-#include "nextWeek/texture.h"
 #include "sphere.h"
+#include "texture.h"
 #include "vec3.h"
 
 void bouncing_spheres();
 void checker_spheres();
+void earth();
 
 void parse_arguments(int argc, char **argv);
 void command_prompt_hint();
 bool isValidArgument(std::string const &str, int &ith_scene);
+
 void render_scene(int ith_scene);
 
 hittable_list initialize_world_object_forBouncingSpheres();
 hittable_list initialize_world_object_forCheckerSpheres();
+hittable_list initialize_world_object_forEarth();
 
 void generate_random_world_objects(hittable_list &world_objects);
 Camera initialize_camera_forBouncingSpheres();
 Camera initialize_camera_forCheckerSpheres();
+Camera initialize_camera_forEarth();
 
 int main(int argc, char **argv) {
   try {
@@ -130,6 +134,16 @@ void generate_random_world_objects(hittable_list &world_objects) {
   }
 }
 
+hittable_list initialize_world_object_forEarth() {
+  auto earth_texture = make_shared<image_texture>("earthmap.jpg");
+  auto earth_material = make_shared<lambertian>(earth_texture);
+  auto globe = make_shared<sphere>(point3(0, 0, 0), 2, earth_material);
+
+  hittable_list world_objects;
+  world_objects.add(globe);
+  return world_objects;
+}
+
 Camera initialize_camera_forBouncingSpheres() {
   Camera camera;
 
@@ -167,6 +181,24 @@ Camera initialize_camera_forCheckerSpheres() {
   return std::move(camera);
 }
 
+Camera initialize_camera_forEarth() {
+  Camera camera;
+
+  camera.aspect_ratio = 16.0 / 9.0;
+  camera.vFov = 20;
+  camera.image_width = 400;
+  camera.sample_per_pixel = 100;
+  camera.max_depth = 50;
+
+  camera.lookfrom = point3(0, 0, 12);
+  camera.lookat = point3(0, 0, 0);
+  camera.up = vec3(0, 1, 0);
+
+  camera.defocus_angle = 0.0;
+
+  return std::move(camera);
+}
+
 void bouncing_spheres() {
   hittable_list world_objects = initialize_world_object_forBouncingSpheres();
   Camera camera = initialize_camera_forBouncingSpheres();
@@ -179,9 +211,16 @@ void checker_spheres() {
   camera.render(world_objects);
 }
 
+void earth() {
+  hittable_list world_objects = initialize_world_object_forEarth();
+  Camera camera = initialize_camera_forEarth();
+  camera.render(world_objects);
+}
+
 void command_prompt_hint() {
   std::cerr << "argument 1: render bouncing spheres scene" << std::endl;
   std::cerr << "argument 2: render checker_spheres scene" << std::endl;
+  std::cerr << "argument 3: render earth scene" << std::endl;
 }
 
 void parse_arguments(int argc, char **argv) {
@@ -193,7 +232,7 @@ void parse_arguments(int argc, char **argv) {
   int ith_scene;
   if (!isValidArgument(argv[1], ith_scene)) {
     throw std::invalid_argument(
-        "invalid argument, expect argument to be 1 or 2");
+        "invalid argument, expect argument to be 1 2, or 3");
   }
 
   render_scene(ith_scene);
@@ -206,7 +245,7 @@ bool isValidArgument(std::string const &str, int &ith_scene) {
   }
 
   ith_scene = std::stoi(str);
-  if (ith_scene != 1 && ith_scene != 2)
+  if (ith_scene != 1 && ith_scene != 2 && ith_scene != 3)
     return false;
 
   return true;
@@ -219,6 +258,9 @@ void render_scene(int ith_scene) {
     break;
   case 2:
     checker_spheres();
+    break;
+  case 3:
+    earth();
     break;
   default:
     checker_spheres();
