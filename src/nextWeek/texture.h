@@ -3,6 +3,7 @@
 
 #include "color.h"
 #include "common.h"
+#include "perlin.h"
 #include "rtw_image.h"
 #include "vec3.h"
 #include <cmath>
@@ -88,6 +89,17 @@ public:
 
 private:
   rtw_image image;
+};
+
+class perlin_noise_texture : public texture {
+public:
+  perlin_noise_texture() {}
+  color3 value(texture_coordinate const &tex_coordinate) const override {
+    return color3(1, 1, 1) * perlin_noise.noise(tex_coordinate.point);
+  }
+
+private:
+  perlin perlin_noise;
 };
 
 #endif // TEXTURE_H

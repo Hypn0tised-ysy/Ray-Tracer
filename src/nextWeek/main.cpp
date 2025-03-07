@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cctype>
 #include <cmath>
+#include <initializer_list>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -79,7 +80,7 @@ hittable_list initialize_world_object_forBouncingSpheres() { // material
   world_objects.add(right_sphere);
   generate_random_world_objects(world_objects);
   world_objects = hittable_list(make_shared<bvh_node>(world_objects));
-
+  ;
   return world_objects;
 }
 
@@ -143,6 +144,18 @@ hittable_list initialize_world_object_forEarth() {
   world_objects.add(globe);
   return world_objects;
 }
+hittable_list initialize_world_object_forPerlinSpheres() {
+  auto perlin_texture = make_shared<perlin_noise_texture>();
+  auto ground = make_shared<sphere>(point3(0, -1000, 0), 1000,
+                                    make_shared<lambertian>(perlin_texture));
+  auto center_sphere = make_shared<sphere>(
+      point3(0, 2, 0), 2, make_shared<lambertian>(perlin_texture));
+
+  hittable_list world_objects;
+  world_objects.add(ground);
+  world_objects.add(center_sphere);
+  return world_objects;
+}
 
 Camera initialize_camera_forBouncingSpheres() {
   Camera camera;
@@ -198,6 +211,23 @@ Camera initialize_camera_forEarth() {
 
   return std::move(camera);
 }
+Camera initialize_camera_forPerlinSpheres() {
+  Camera camera;
+
+  camera.aspect_ratio = 16.0 / 9.0;
+  camera.vFov = 20;
+  camera.image_width = 400;
+  camera.sample_per_pixel = 100;
+  camera.max_depth = 50;
+
+  camera.lookfrom = point3(13, 2, 3);
+  camera.lookat = point3(0, 0, 0);
+  camera.up = vec3(0, 1, 0);
+
+  camera.defocus_angle = 0.0;
+
+  return std::move(camera);
+}
 
 void bouncing_spheres() {
   hittable_list world_objects = initialize_world_object_forBouncingSpheres();
@@ -214,6 +244,11 @@ void checker_spheres() {
 void earth() {
   hittable_list world_objects = initialize_world_object_forEarth();
   Camera camera = initialize_camera_forEarth();
+  camera.render(world_objects);
+}
+void perlin_spheres() {
+  hittable_list world_objects = initialize_world_object_forPerlinSpheres();
+  Camera camera = initialize_camera_forPerlinSpheres();
   camera.render(world_objects);
 }
 
@@ -245,7 +280,7 @@ bool isValidArgument(std::string const &str, int &ith_scene) {
   }
 
   ith_scene = std::stoi(str);
-  if (ith_scene != 1 && ith_scene != 2 && ith_scene != 3)
+  if (ith_scene != 1 && ith_scene != 2 && ith_scene != 3 && ith_scene != 4)
     return false;
 
   return true;
@@ -261,6 +296,9 @@ void render_scene(int ith_scene) {
     break;
   case 3:
     earth();
+    break;
+  case 4:
+    perlin_spheres();
     break;
   default:
     checker_spheres();
