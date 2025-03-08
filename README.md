@@ -11,7 +11,8 @@
   - dielectrics
 - basic camera model supporting moving\defocus blur
 - procedural-generating sphere scene
-
+## final render
+![iamge](images/inOneWeekend/final_render.pbm)
   # nextWeek
   ## 实现效果
   - motion blur
