@@ -26,8 +26,8 @@ public:
     // hermite cubic,用于消除mach band，降低线性程度，让结果看上去更随机
     // 在这里就是用一个三次函数代替一次函数
     u = u * u * (3 - 2 * u);
-    v = u * v * (3 - 2 * v);
-    w = u * w * (3 - 2 * w);
+    v = v * v * (3 - 2 * v);
+    w = w * w * (3 - 2 * w);
 
     auto x_integer_part = int(std::floor(p.x));
     auto y_integer_part = int(std::floor(p.y));
