@@ -22,7 +22,8 @@ public:
 class texture {
 public:
   virtual ~texture() = default;
-  virtual color3 value(texture_coordinate const &) const = 0;
+  virtual color3 value(texture_coordinate const &,
+                       point3 const &hitPoint) const = 0;
 };
 
 class solid_color : public texture {
@@ -30,7 +31,8 @@ public:
   solid_color(color3 const &albedo) : albedo(albedo) {}
   solid_color(double red, double green, double blue)
       : solid_color(color3(red, green, blue)) {}
-  virtual color3 value(texture_coordinate const &) const override {
+  virtual color3 value(texture_coordinate const &,
+                       point3 const &hitPoint) const override {
     return albedo;
   }
 
@@ -47,19 +49,20 @@ public:
       : checker_texture(scale, make_shared<solid_color>(even),
                         make_shared<solid_color>(odd)) {}
 
-  virtual color3
-  value(texture_coordinate const &tex_coordinate) const override {
+  virtual color3 value(texture_coordinate const &tex_coordinate,
+                       point3 const &hitPoint) const override {
     double scale_reciprocal = 1 / scale;
 
-    double x_scale = scale_reciprocal * tex_coordinate.point.x,
-           y_scale = scale_reciprocal * tex_coordinate.point.y,
-           z_scale = scale_reciprocal * tex_coordinate.point.z;
+    double x_scale = scale_reciprocal * hitPoint.x,
+           y_scale = scale_reciprocal * hitPoint.y,
+           z_scale = scale_reciprocal * hitPoint.z;
 
     int ix = int(std::floor(x_scale)), iy = int(std::floor(y_scale)),
         iz = int(std::floor(z_scale));
 
     bool isEven = (ix + iy + iz) % 2 == 0;
-    return isEven ? even->value(tex_coordinate) : odd->value(tex_coordinate);
+    return isEven ? even->value(tex_coordinate, hitPoint)
+                  : odd->value(tex_coordinate, hitPoint);
   }
 
 private:
@@ -72,7 +75,8 @@ class image_texture : public texture {
 public:
   image_texture(const char *filename) : image(filename) {}
 
-  color3 value(texture_coordinate const &tex_coordinate) const override {
+  color3 value(texture_coordinate const &tex_coordinate,
+               point3 const &hitPoint) const override {
     if (image.height() <= 0)
       return color3(0, 1, 1);
 
@@ -94,8 +98,9 @@ private:
 class perlin_noise_texture : public texture {
 public:
   perlin_noise_texture() {}
-  color3 value(texture_coordinate const &tex_coordinate) const override {
-    return color3(1, 1, 1) * perlin_noise.noise(tex_coordinate.point);
+  color3 value(texture_coordinate const &tex_coordinate,
+               point3 const &hitPoint) const override {
+    return color3(1, 1, 1) * perlin_noise.noise(hitPoint);
   }
 
 private:
