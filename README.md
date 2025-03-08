@@ -12,7 +12,7 @@
 - basic camera model supporting moving\defocus blur
 - procedural-generating sphere scene
 ## final render
-![images/inOneWeekend/final_render.pbm]
+![image](images/inOneWeekend/final_render.png)
   # nextWeek
   ## 实现效果
   - motion blur
