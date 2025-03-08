@@ -36,7 +36,7 @@ public:
            (std::fabs(z) < epsilon);
   }
 
-  static vec3 generate_random_vector() {
+  static vec3 generate_random_vector() { // 生成[0,1]^3空间内的随机向量
     return vec3(random_double(), random_double(), random_double());
   }
   static vec3 generate_random_vector(double min, double max) {

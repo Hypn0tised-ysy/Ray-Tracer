@@ -99,7 +99,7 @@ public:
   perlin_noise_texture(double _scale = 1.0) : scale(_scale) {}
   color3 value(texture_coordinate const &tex_coordinate,
                point3 const &hitPoint) const override {
-    return color3(1, 1, 1) * perlin_noise.noise(hitPoint * scale);
+    return color3(1, 1, 1) * perlin_noise.turbulence(hitPoint, 7);
   }
 
 private:
