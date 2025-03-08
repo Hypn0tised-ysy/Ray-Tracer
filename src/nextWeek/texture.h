@@ -52,7 +52,6 @@ public:
   virtual color3 value(texture_coordinate const &tex_coordinate,
                        point3 const &hitPoint) const override {
     double scale_reciprocal = 1 / scale;
-
     double x_scale = scale_reciprocal * hitPoint.x,
            y_scale = scale_reciprocal * hitPoint.y,
            z_scale = scale_reciprocal * hitPoint.z;
