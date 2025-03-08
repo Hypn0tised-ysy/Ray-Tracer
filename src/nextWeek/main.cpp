@@ -145,7 +145,7 @@ hittable_list initialize_world_object_forEarth() {
   return world_objects;
 }
 hittable_list initialize_world_object_forPerlinSpheres() {
-  auto perlin_texture = make_shared<perlin_noise_texture>();
+  auto perlin_texture = make_shared<perlin_noise_texture>(4.0);
   auto ground = make_shared<sphere>(point3(0, -1000, 0), 1000,
                                     make_shared<lambertian>(perlin_texture));
   auto center_sphere = make_shared<sphere>(
