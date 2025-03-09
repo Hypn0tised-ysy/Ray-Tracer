@@ -14,6 +14,7 @@ public:
   texture_coordinate(double u, double v, point3 const &point)
       : u(u), v(v), point(point) {}
   texture_coordinate(point3 const &point) : u(0), v(0), point(point) {}
+  texture_coordinate(double _u, double _v) : u(_u), v(_v) {}
 
   double u, v;
   point3 point;

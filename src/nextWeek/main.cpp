@@ -200,6 +200,8 @@ Camera initialize_camera_forBouncingSpheres() {
   camera.defocus_angle = 0.6;
   camera.focus_distance = 10.0;
 
+  camera.background = color3(0.70, 0.80, 1.0);
+
   return std::move(camera);
 }
 
@@ -217,6 +219,8 @@ Camera initialize_camera_forCheckerSpheres() {
   camera.up = vec3(0, 1, 0);
 
   camera.defocus_angle = 0.0;
+
+  camera.background = color3(0.70, 0.80, 1.0);
 
   return std::move(camera);
 }
@@ -236,6 +240,8 @@ Camera initialize_camera_forEarth() {
 
   camera.defocus_angle = 0.0;
 
+  camera.background = color3(0.70, 0.80, 1.0);
+
   return std::move(camera);
 }
 Camera initialize_camera_forPerlinSpheres() {
@@ -252,6 +258,8 @@ Camera initialize_camera_forPerlinSpheres() {
   camera.up = vec3(0, 1, 0);
 
   camera.defocus_angle = 0.0;
+
+  camera.background = color3(0.70, 0.80, 1.0);
 
   return std::move(camera);
 }
@@ -270,6 +278,8 @@ Camera initialize_camera_forQuadScene() {
   camera.up = vec3(0, 1, 0);
 
   camera.defocus_angle = 0;
+
+  camera.background = color3(0.70, 0.80, 1.0);
 
   return std::move(camera);
 }
@@ -301,6 +311,37 @@ void quad_scene() {
   Camera camera = initialize_camera_forQuadScene();
   camera.render(world_objects);
 }
+void simple_light_scene() {
+  hittable_list world;
+
+  auto pertext = make_shared<perlin_noise_texture>(4);
+  world.add(make_shared<sphere>(point3(0, -1000, 0), 1000,
+                                make_shared<lambertian>(pertext)));
+  world.add(make_shared<sphere>(point3(0, 2, 0), 2,
+                                make_shared<lambertian>(pertext)));
+
+  auto difflight = make_shared<diffuse_light>(color3(4, 4, 4));
+  world.add(make_shared<quad>(point3(3, 1, -2), vec3(2, 0, 0), vec3(0, 2, 0),
+                              difflight));
+  world.add(make_shared<sphere>(point3(0, 7, 0), 2, difflight));
+
+  Camera camera;
+
+  camera.aspect_ratio = 16.0 / 9.0;
+  camera.image_width = 400;
+  camera.sample_per_pixel = 100;
+  camera.max_depth = 50;
+  camera.background = color3(0, 0, 0);
+
+  camera.vFov = 20;
+  camera.lookfrom = point3(26, 3, 6);
+  camera.lookat = point3(0, 2, 0);
+  camera.up = vec3(0, 1, 0);
+
+  camera.defocus_angle = 0;
+
+  camera.render(world);
+}
 
 void command_prompt_hint() {
   std::cerr << "argument 1: render bouncing spheres scene" << std::endl;
@@ -308,6 +349,10 @@ void command_prompt_hint() {
   std::cerr << "argument 3: render earth scene" << std::endl;
   std::cerr << "argument 4: render perlin_noise scene" << std::endl;
   std::cerr << "argument 5: render quad scene" << std::endl;
+  std::cerr << "argument 6: render  scene" << std::endl;
+  std::cerr << "argument 7: render  scene" << std::endl;
+  std::cerr << "argument 8: render  scene" << std::endl;
+  std::cerr << "argument 9: render  scene" << std::endl;
 }
 
 void parse_arguments(int argc, char **argv) {
@@ -319,7 +364,7 @@ void parse_arguments(int argc, char **argv) {
   int ith_scene;
   if (!isValidArgument(argv[1], ith_scene)) {
     throw std::invalid_argument(
-        "invalid argument, expect argument to be 1 2 3 4,or 5");
+        "invalid argument, expect argument to be {1-9}");
   }
 
   render_scene(ith_scene);
@@ -332,11 +377,24 @@ bool isValidArgument(std::string const &str, int &ith_scene) {
   }
 
   ith_scene = std::stoi(str);
-  if (ith_scene != 1 && ith_scene != 2 && ith_scene != 3 && ith_scene != 4 &&
-      ith_scene != 5)
-    return false;
-
-  return true;
+  bool valid;
+  switch (ith_scene) {
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+    valid = true;
+    break;
+  default:
+    valid = false;
+    break;
+  }
+  return valid;
 }
 
 void render_scene(int ith_scene) {
@@ -355,6 +413,15 @@ void render_scene(int ith_scene) {
     break;
   case 5:
     quad_scene();
+    break;
+  case 6:
+    simple_light_scene();
+    break;
+  case 7:
+    break;
+  case 8:
+    break;
+  case 9:
     break;
   default:
     checker_spheres();

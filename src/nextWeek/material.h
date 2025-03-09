@@ -14,8 +14,18 @@ class Material {
 public:
   virtual ~Material() = default;
 
+  virtual color3 emitted(double u, double v, point3 const &point) const {
+    return color3(0, 0, 0);
+  }
+  virtual color3 emitted(texture_coordinate const &texture_coordinate,
+                         point3 const &point) const {
+    return emitted(texture_coordinate.u, texture_coordinate.v, point);
+  }
+
   virtual bool Scatter(const Ray &ray_in, const hit_record &record,
-                       color3 &attenuation, Ray &scattered) const = 0;
+                       color3 &attenuation, Ray &scattered) const {
+    return false;
+  };
 };
 
 class lambertian : public Material {
@@ -118,6 +128,20 @@ private:
     r0 = r0 * r0;
     return r0 + (1 - r0) * std::pow((1 - cos_theta), 5);
   }
+};
+
+class diffuse_light : public Material {
+public:
+  diffuse_light(shared_ptr<texture> const &tex) : tex(tex) {}
+  diffuse_light(color3 const &emit) : tex(make_shared<solid_color>(emit)) {}
+
+  color3 emitted(double u, double v, point3 const &point) const override {
+    texture_coordinate tex_coordinate = texture_coordinate(u, v);
+    return tex->value(tex_coordinate, point);
+  }
+
+private:
+  shared_ptr<texture> tex;
 };
 
 #endif // MATERIAL_H

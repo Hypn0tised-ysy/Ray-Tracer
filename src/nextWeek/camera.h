@@ -30,6 +30,7 @@ public:
   double aspect_ratio = 1.0;
   double vFov = 90.0;
   int image_width = 100;
+  color3 background;
 
   point3 lookfrom = point3(0, 0, 0);
   point3 lookat = point3(0, 0, -1);
@@ -114,23 +115,26 @@ private:
     if (depth <= 0)
       return color3(0, 0, 0);
     hit_record record;
-    if (world_objects.hit(ray, interval(0.001, Infinity_double), record)) {
-      return scattered_color(ray, depth, record, world_objects);
-    } else
-      return background_color(ray);
+    if (!world_objects.hit(ray, interval(0.001, Infinity_double), record))
+      return background;
+
+    return scattered_color(ray, depth, record, world_objects);
   }
 
   color3 scattered_color(Ray const &ray, int depth, hit_record &record,
                          hittable const &world_objects) {
     color3 attenuation;
     Ray scattered_ray;
-    color3 result(0, 0, 0);
-    if (record.material->Scatter(ray, record, attenuation, scattered_ray)) {
-      color3 scattered_color =
-          ray_color(scattered_ray, depth - 1, world_objects);
-      result = cwiseProduct(attenuation, scattered_color);
-    }
-    return result;
+    color3 color_from_emission =
+        record.material->emitted(record.textureCoordinate, record.hitPoint);
+
+    if (!record.material->Scatter(ray, record, attenuation, scattered_ray))
+      return color_from_emission;
+
+    color3 scattered_color = cwiseProduct(
+        attenuation, ray_color(scattered_ray, depth - 1, world_objects));
+
+    return scattered_color + color_from_emission;
   }
 
   Ray getSampleRay(int x, int y) const {
