@@ -17,6 +17,7 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
+#include "nextWeek/quad.h"
 #include "sphere.h"
 #include "texture.h"
 #include "vec3.h"
@@ -34,11 +35,13 @@ void render_scene(int ith_scene);
 hittable_list initialize_world_object_forBouncingSpheres();
 hittable_list initialize_world_object_forCheckerSpheres();
 hittable_list initialize_world_object_forEarth();
+hittable_list initialize_world_object_forQuadScene();
 
 void generate_random_world_objects(hittable_list &world_objects);
 Camera initialize_camera_forBouncingSpheres();
 Camera initialize_camera_forCheckerSpheres();
 Camera initialize_camera_forEarth();
+Camera initialize_camera_forQuadScene();
 
 int main(int argc, char **argv) {
   try {
@@ -156,6 +159,30 @@ hittable_list initialize_world_object_forPerlinSpheres() {
   world_objects.add(center_sphere);
   return world_objects;
 }
+hittable_list initialize_world_object_forQuadScene() {
+  hittable_list world;
+
+  // Materials
+  auto left_red = make_shared<lambertian>(color3(1.0, 0.2, 0.2));
+  auto back_green = make_shared<lambertian>(color3(0.2, 1.0, 0.2));
+  auto right_blue = make_shared<lambertian>(color3(0.2, 0.2, 1.0));
+  auto upper_orange = make_shared<lambertian>(color3(1.0, 0.5, 0.0));
+  auto lower_teal = make_shared<lambertian>(color3(0.2, 0.8, 0.8));
+
+  // Quads
+  world.add(make_shared<quad>(point3(-3, -2, 5), vec3(0, 0, -4), vec3(0, 4, 0),
+                              left_red));
+  world.add(make_shared<quad>(point3(-2, -2, 0), vec3(4, 0, 0), vec3(0, 4, 0),
+                              back_green));
+  world.add(make_shared<quad>(point3(3, -2, 1), vec3(0, 0, 4), vec3(0, 4, 0),
+                              right_blue));
+  world.add(make_shared<quad>(point3(-2, 3, 1), vec3(4, 0, 0), vec3(0, 0, 4),
+                              upper_orange));
+  world.add(make_shared<quad>(point3(-2, -3, 5), vec3(4, 0, 0), vec3(0, 0, -4),
+                              lower_teal));
+
+  return world;
+}
 
 Camera initialize_camera_forBouncingSpheres() {
   Camera camera;
@@ -229,6 +256,24 @@ Camera initialize_camera_forPerlinSpheres() {
   return std::move(camera);
 }
 
+Camera initialize_camera_forQuadScene() {
+  Camera camera;
+
+  camera.aspect_ratio = 1.0;
+  camera.image_width = 400;
+  camera.sample_per_pixel = 100;
+  camera.max_depth = 50;
+
+  camera.vFov = 80;
+  camera.lookfrom = point3(0, 0, 9);
+  camera.lookat = point3(0, 0, 0);
+  camera.up = vec3(0, 1, 0);
+
+  camera.defocus_angle = 0;
+
+  return std::move(camera);
+}
+
 void bouncing_spheres() {
   hittable_list world_objects = initialize_world_object_forBouncingSpheres();
   Camera camera = initialize_camera_forBouncingSpheres();
@@ -251,11 +296,18 @@ void perlin_spheres() {
   Camera camera = initialize_camera_forPerlinSpheres();
   camera.render(world_objects);
 }
+void quad_scene() {
+  hittable_list world_objects = initialize_world_object_forQuadScene();
+  Camera camera = initialize_camera_forQuadScene();
+  camera.render(world_objects);
+}
 
 void command_prompt_hint() {
   std::cerr << "argument 1: render bouncing spheres scene" << std::endl;
   std::cerr << "argument 2: render checker_spheres scene" << std::endl;
   std::cerr << "argument 3: render earth scene" << std::endl;
+  std::cerr << "argument 4: render perlin_noise scene" << std::endl;
+  std::cerr << "argument 5: render quad scene" << std::endl;
 }
 
 void parse_arguments(int argc, char **argv) {
@@ -267,7 +319,7 @@ void parse_arguments(int argc, char **argv) {
   int ith_scene;
   if (!isValidArgument(argv[1], ith_scene)) {
     throw std::invalid_argument(
-        "invalid argument, expect argument to be 1 2, or 3");
+        "invalid argument, expect argument to be 1 2 3 4,or 5");
   }
 
   render_scene(ith_scene);
@@ -280,7 +332,8 @@ bool isValidArgument(std::string const &str, int &ith_scene) {
   }
 
   ith_scene = std::stoi(str);
-  if (ith_scene != 1 && ith_scene != 2 && ith_scene != 3 && ith_scene != 4)
+  if (ith_scene != 1 && ith_scene != 2 && ith_scene != 3 && ith_scene != 4 &&
+      ith_scene != 5)
     return false;
 
   return true;
@@ -299,6 +352,9 @@ void render_scene(int ith_scene) {
     break;
   case 4:
     perlin_spheres();
+    break;
+  case 5:
+    quad_scene();
     break;
   default:
     checker_spheres();

@@ -13,16 +13,19 @@ public:
   aabb(interval const &x_interval, interval const &y_interval,
        interval const &z_interval)
       : x_interval(x_interval), y_interval(y_interval), z_interval(z_interval) {
+    pad_to_minimum(); // 防止aabb体积为0，这样会导致除以0的数值错误
   }
   aabb(point3 const &p1, point3 const &p2) {
     x_interval = interval(std::fmin(p1.x, p2.x), std::fmax(p1.x, p2.x));
     y_interval = interval(std::fmin(p1.y, p2.y), std::fmax(p1.y, p2.y));
     z_interval = interval(std::fmin(p1.z, p2.z), std::fmax(p1.z, p2.z));
+    pad_to_minimum();
   }
   aabb(aabb const &a, aabb const &b) {
     x_interval = interval(a.x_interval, b.x_interval);
     y_interval = interval(a.y_interval, b.y_interval);
     z_interval = interval(a.z_interval, b.z_interval);
+    pad_to_minimum();
   }
 
   const interval &get_axis_interval(int ith_axis_interval) const {
@@ -75,6 +78,17 @@ public:
 
   static const aabb Empty_bbox;
   static const aabb Universe_bbox;
+
+private:
+  void pad_to_minimum() {
+    double delta = 0.0001;
+    if (x_interval.length() < delta)
+      x_interval = x_interval.expand(delta);
+    if (y_interval.length() < delta)
+      y_interval = y_interval.expand(delta);
+    if (z_interval.length() < delta)
+      z_interval = z_interval.expand(delta);
+  }
 };
 
 const aabb aabb::Empty_bbox(interval::Empty, interval::Empty, interval::Empty);
