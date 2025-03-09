@@ -342,6 +342,44 @@ void simple_light_scene() {
 
   camera.render(world);
 }
+void cornell_box() {
+  hittable_list world;
+
+  auto red = make_shared<lambertian>(color3(.65, .05, .05));
+  auto white = make_shared<lambertian>(color3(.73, .73, .73));
+  auto green = make_shared<lambertian>(color3(.12, .45, .15));
+  auto light = make_shared<diffuse_light>(color3(15, 15, 15));
+
+  world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0),
+                              vec3(0, 0, 555), green));
+  world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555),
+                              red));
+  world.add(make_shared<quad>(point3(343, 554, 332), vec3(-130, 0, 0),
+                              vec3(0, 0, -105), light));
+  world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555),
+                              white));
+  world.add(make_shared<quad>(point3(555, 555, 555), vec3(-555, 0, 0),
+                              vec3(0, 0, -555), white));
+  world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0),
+                              vec3(0, 555, 0), white));
+
+  Camera camera;
+
+  camera.aspect_ratio = 1.0;
+  camera.image_width = 600;
+  camera.sample_per_pixel = 200;
+  camera.max_depth = 50;
+  camera.background = color3(0, 0, 0);
+
+  camera.vFov = 40;
+  camera.lookfrom = point3(278, 278, -800);
+  camera.lookat = point3(278, 278, 0);
+  camera.up = vec3(0, 1, 0);
+
+  camera.defocus_angle = 0;
+
+  camera.render(world);
+}
 
 void command_prompt_hint() {
   std::cerr << "argument 1: render bouncing spheres scene" << std::endl;
@@ -418,6 +456,7 @@ void render_scene(int ith_scene) {
     simple_light_scene();
     break;
   case 7:
+    cornell_box();
     break;
   case 8:
     break;
