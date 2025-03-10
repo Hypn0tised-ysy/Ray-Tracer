@@ -95,4 +95,11 @@ const aabb aabb::Empty_bbox(interval::Empty, interval::Empty, interval::Empty);
 const aabb aabb::Universe_bbox(interval::Universe, interval::Universe,
                                interval::Universe);
 
+aabb operator+(aabb const &a, vec3 const &offset) {
+  return aabb(a.x_interval + offset.x, a.y_interval + offset.y,
+              a.z_interval + offset.z);
+  ;
+}
+aabb operator+(vec3 const &offset, aabb const &a) { return a + offset; }
+
 #endif // AABB_H

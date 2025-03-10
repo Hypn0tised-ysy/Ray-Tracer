@@ -40,4 +40,9 @@ public:
 interval const interval::Empty(+INFINITY_DOUBLE, -INFINITY_DOUBLE);
 interval const interval::Universe(-INFINITY_DOUBLE, +INFINITY_DOUBLE);
 
+interval operator+(interval const &a, double offset) {
+  return interval(a.min + offset, a.max + offset);
+}
+interval operator+(double offset, interval const &a) { return a + offset; }
+
 #endif // INTERVAL_H
