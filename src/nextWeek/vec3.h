@@ -143,6 +143,11 @@ vec3 generate_random_diffused_unitVector() {
   }
 }
 
+vec3 generate_random_vector(double min, double max) {
+  return vec3(random_double(min, max), random_double(min, max),
+              random_double(min, max));
+}
+
 vec3 generate_random_diffused_unitVector_onHemisphere(
     vec3 const &normalAgainstRay) {
   vec3 randomVector = generate_random_diffused_unitVector();
