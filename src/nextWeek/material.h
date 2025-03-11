@@ -144,4 +144,20 @@ private:
   shared_ptr<texture> tex;
 };
 
+class isotropic : public Material {
+public:
+  isotropic(shared_ptr<texture> _tex) : tex(_tex) {}
+  isotropic(color3 const &albedo) : tex(make_shared<solid_color>(albedo)) {}
+  bool Scatter(Ray const &ray_in, hit_record const &record, color3 &attenuation,
+               Ray &scattered) const override {
+    scattered = Ray(ray_in.getOrigin(), generate_random_diffused_unitVector(),
+                    ray_in.getTime());
+    attenuation = tex->value(record.textureCoordinate, record.hitPoint);
+    return true;
+  }
+
+private:
+  shared_ptr<texture> tex;
+};
+
 #endif // MATERIAL_H

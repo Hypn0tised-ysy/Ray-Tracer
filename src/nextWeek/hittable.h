@@ -138,4 +138,5 @@ private:
   double cos_theta;
   aabb bbox;
 };
+
 #endif
