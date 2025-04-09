@@ -13,12 +13,14 @@ set ( EXTERNAL
 
 file(GLOB SOURCE_ONEWEEKEND "src/inOneWeekend/*.cpp" "src/inOneWeekend/*.h")
 file(GLOB SOURCE_NEXTWEEK "src/nextWeek/*.cpp" "src/nextWeek/*.h")
+file(GLOB SOURCE_RESTOFYOURLIFE "src/restOfYourLife/*.cpp" "src/restOfYourLife/*.h")
 
 include_directories(src)
 
 # Executables
 add_executable(inOneWeekend ${EXTERNAL} ${SOURCE_ONEWEEKEND}) 
 add_executable(nextWeek ${EXTERNAL} ${SOURCE_NEXTWEEK}) 
+add_executable(restOfYourLife ${EXTERNAL} ${SOURCE_RESTOFYOURLIFE}) 
 
 # Specific compiler flags below. We're not going to add options for all possible compilers, but if
 # you're new to CMake (like we are), the following may be a helpful example if you're using a
