@@ -4,7 +4,10 @@
 #include "color.h"
 #include "common.h"
 #include "hittable.h"
+#include "nextWeek/common.h"
+#include "nextWeek/vec3.h"
 #include "ray.h"
+#include "restOfYourLife/orthonormalbasis.h"
 #include "texture.h"
 #include "vec3.h"
 #include <cmath>
@@ -23,9 +26,14 @@ public:
   }
 
   virtual bool Scatter(const Ray &ray_in, const hit_record &record,
-                       color3 &attenuation, Ray &scattered) const {
+                       color3 &attenuation, Ray &scattered, double &pdf) const {
     return false;
-  };
+  }
+
+  virtual double Scatter_pdf(const Ray &ray_in, const hit_record &record,
+                             const Ray &scattered) const {
+    return 0.0;
+  }
 };
 
 class lambertian : public Material {
@@ -34,23 +42,27 @@ public:
   lambertian(shared_ptr<texture> const &tex) : tex(tex) {}
 
   bool Scatter(const Ray &ray_in, const hit_record &record, color3 &attenuation,
-               Ray &scattered) const override {
-    vec3 diffuse_direction = generate_diffuse_direction(record);
-    scattered = Ray(record.hitPoint, diffuse_direction, ray_in.getTime());
+               Ray &scattered, double &pdf) const override {
+    onb uvw(record.normalAgainstRay);
+    vec3 scattered_direction =
+        uvw.generate_random_relative_vec(random_cosine_direction());
+
+    scattered = Ray(record.hitPoint, unit_vector(scattered_direction),
+                    ray_in.getTime());
     attenuation = tex->value(record.textureCoordinate, record.hitPoint);
+    pdf = dotProduct(uvw.getw(), scattered.getDirection()) / PI;
     return true;
+  }
+
+  double Scatter_pdf(const Ray &ray_in, const hit_record &record,
+                     const Ray &scattered) const override {
+    auto cos_theta = dotProduct(record.normalAgainstRay,
+                                unit_vector(scattered.getDirection()));
+    return cos_theta < 0.0 ? 0.0 : cos_theta / PI;
   }
 
 private:
   shared_ptr<texture> tex;
-
-  vec3 generate_diffuse_direction(const hit_record &record) const {
-    vec3 diffuse_direction =
-        record.normalAgainstRay + generate_random_diffused_unitVector();
-    if (diffuse_direction.nearZero())
-      diffuse_direction = record.normalAgainstRay;
-    return unit_vector(diffuse_direction);
-  }
 };
 
 class metal : public Material {
@@ -59,7 +71,7 @@ public:
       : albedo(albedo), fuzziness(fuzziness) {}
 
   bool Scatter(const Ray &ray_in, const hit_record &record, color3 &attenuation,
-               Ray &scattered) const override {
+               Ray &scattered, double &pdf) const override {
     vec3 reflected = unit_vector(
         reflect(unit_vector(ray_in.getDirection()), record.normalAgainstRay));
     reflected = unit_vector(reflected +
@@ -79,7 +91,7 @@ public:
   dielectric(double refraction_index) : refraction_index(refraction_index) {}
 
   bool Scatter(const Ray &ray_in, const hit_record &record, color3 &attenuation,
-               Ray &scattered) const override {
+               Ray &scattered, double &pdf) const override {
     attenuation = color3(1.0, 1.0, 1.0);
     double etaIncidentOverEtaRefract =
         record.frontFace ? 1.0 / refraction_index : refraction_index;
@@ -148,12 +160,19 @@ class isotropic : public Material {
 public:
   isotropic(shared_ptr<texture> _tex) : tex(_tex) {}
   isotropic(color3 const &albedo) : tex(make_shared<solid_color>(albedo)) {}
+
   bool Scatter(Ray const &ray_in, hit_record const &record, color3 &attenuation,
-               Ray &scattered) const override {
+               Ray &scattered, double &pdf) const override {
     scattered = Ray(ray_in.getOrigin(), generate_random_diffused_unitVector(),
                     ray_in.getTime());
     attenuation = tex->value(record.textureCoordinate, record.hitPoint);
+    pdf = 1 / (4 * PI);
     return true;
+  }
+
+  double Scatter_pdf(const Ray &ray_in, const hit_record &record,
+                     const Ray &scattered) const override {
+    return 1 / (4 * PI);
   }
 
 private:

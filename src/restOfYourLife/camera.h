@@ -51,12 +51,13 @@ public:
                 << std::flush;
       for (int x = 0; x < image_width; x++) {
         color3 pixel_color(0, 0, 0);
-        for (int ith_sample_ray = 0; ith_sample_ray < sample_per_pixel;
-             ith_sample_ray++) {
-          Ray sampleRay = getSampleRay(x, y);
-          color3 sample_pixel_color =
-              ray_color(sampleRay, max_depth, world_objects);
-          pixel_color += sample_pixel_color;
+        for (int stratified_y = 0; stratified_y < sqrt_spp; stratified_y++) {
+          for (int stratified_x = 0; stratified_x < sqrt_spp; stratified_x++) {
+            Ray sampleRay = getSampleRay(x, y, stratified_x, stratified_y);
+            color3 sample_pixel_color =
+                ray_color(sampleRay, max_depth, world_objects);
+            pixel_color += sample_pixel_color;
+          }
         }
 
         pixel_color *= sample_scale;
@@ -73,12 +74,14 @@ private:
   point3 viewport_00_pixel_position;
   vec3 pixel_delta_u, pixel_delta_v;
   vec3 defocus_disk_u, defocus_disk_v;
+
+  int sqrt_spp;
+  double reciprocal_sqrt_spp;
+
   vec3 u, v, w; // w指向观测方向的反方向（右手系），u指向相机右侧，v指向相机上侧
   double sample_scale;
 
   void initialize() {
-    sample_scale = 1.0 / sample_per_pixel;
-
     // image
     image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
@@ -109,12 +112,19 @@ private:
         center - (focus_distance * w) - u_viewport / 2 - v_viewport / 2;
     viewport_00_pixel_position =
         viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+    // stratified sampling
+    sqrt_spp = int(std::sqrt(sample_per_pixel));
+    sample_scale = 1.0 / (sqrt_spp * sqrt_spp);
+    reciprocal_sqrt_spp = 1.0 / sqrt_spp;
   }
 
   color3 ray_color(Ray const &ray, int depth, hittable const &world_objects) {
     if (depth <= 0)
       return color3(0, 0, 0);
+
     hit_record record;
+
     if (!world_objects.hit(ray, interval(0.001, Infinity_double), record))
       return background;
 
@@ -127,18 +137,24 @@ private:
     Ray scattered_ray;
     color3 color_from_emission =
         record.material->emitted(record.textureCoordinate, record.hitPoint);
+    double pdf_value;
 
-    if (!record.material->Scatter(ray, record, attenuation, scattered_ray))
+    if (!record.material->Scatter(ray, record, attenuation, scattered_ray,
+                                  pdf_value))
       return color_from_emission;
 
-    color3 scattered_color = cwiseProduct(
-        attenuation, ray_color(scattered_ray, depth - 1, world_objects));
+    double scattering_pdf =
+        record.material->Scatter_pdf(ray, record, scattered_ray);
+    pdf_value = scattering_pdf;
+    color3 color_from_scatter =
+        cwiseProduct(attenuation * scattering_pdf,
+                     ray_color(scattered_ray, depth - 1, world_objects)) /
+        pdf_value;
 
-    return scattered_color + color_from_emission;
+    return color_from_scatter + color_from_emission;
   }
-
-  Ray getSampleRay(int x, int y) const {
-    vec3 offset = sample_square();
+  Ray getSampleRay(int x, int y, int stratified_x, int stratified_y) const {
+    vec3 offset = sample_stratified_square(stratified_x, stratified_y);
     point3 sample_pixel_center = viewport_00_pixel_position +
                                  (x + offset.x) * pixel_delta_u +
                                  (y + offset.y) * pixel_delta_v;
@@ -153,6 +169,13 @@ private:
     vec3 offset(random_double(-0.5, 0.5), random_double(-0.5, 0.5), 0.0);
     return offset;
   }
+
+  vec3 sample_stratified_square(int stratified_x, int stratified_y) const {
+    double x = (random_double(0, 1) + stratified_x) * reciprocal_sqrt_spp - 0.5;
+    double y = (random_double(0, 1) + stratified_y) * reciprocal_sqrt_spp - 0.5;
+    vec3 offset(x, y, 0.0);
+    return offset;
+  };
 
   point3 sample_defocusDisk() const {
 

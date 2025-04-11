@@ -164,8 +164,8 @@ private:
   }
 
   vec3 sample_stratified_square(int stratified_x, int stratified_y) const {
-    double x = random_double(0, 1) + stratified_x - 0.5;
-    double y = random_double(0, 1) + stratified_y - 0.5;
+    double x = (random_double(0, 1) + stratified_x) * reciprocal_sqrt_spp - 0.5;
+    double y = (random_double(0, 1) + stratified_y) * reciprocal_sqrt_spp - 0.5;
     vec3 offset(x, y, 0.0);
     return offset;
   };

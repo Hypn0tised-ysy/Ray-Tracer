@@ -2,6 +2,7 @@
 #define VEC3_H
 
 #include "common.h"
+#include "nextWeek/common.h"
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -173,6 +174,19 @@ vec3 refract(vec3 const &incidentDirection, vec3 const &normal,
   refract_n_parallel =
       -std::sqrt(std::fabs(1 - refract_n_perpendicular.norm_square())) * n;
   return refract_n_parallel + refract_n_perpendicular;
+}
+
+vec3 random_cosine_direction() {
+  // generate distribution: p(omega)=cos(theta)/pi
+  auto r1 = random_double();
+  auto r2 = random_double();
+
+  auto phi = 2 * PI * r1;
+  auto x = std::cos(phi) * std::sqrt(r2);
+  auto y = std::sin(phi) * std::sqrt(r2);
+  auto z = std::sqrt(1 - r2);
+
+  return vec3(x, y, z);
 }
 
 #endif
