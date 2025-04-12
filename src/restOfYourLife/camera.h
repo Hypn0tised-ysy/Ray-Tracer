@@ -7,6 +7,7 @@
 #include "material.h"
 #include "nextWeek/ray.h"
 #include "ray.h"
+#include "restOfYourLife/pdf.h"
 #include "vec3.h"
 #include <cmath>
 
@@ -139,29 +140,15 @@ private:
     color3 color_from_emission =
         record.material->emitted(ray, record, record.textureCoordinate.u,
                                  record.textureCoordinate.v, record.hitPoint);
-
     double pdf_value;
 
     if (!record.material->Scatter(ray, record, attenuation, scattered_ray,
                                   pdf_value))
       return color_from_emission;
 
-    auto on_light =
-        point3(random_double(213, 343), 554, random_double(227, 332));
-    auto to_light = on_light - record.hitPoint;
-    auto distance_squred = to_light.norm_square();
-    to_light = unit_vector(to_light);
-
-    if (dotProduct(to_light, record.normalAgainstRay) < 0)
-      return color_from_emission;
-
-    double light_area = (343 - 213) * (332 - 227);
-    auto light_cosine = std::fabs(to_light.y);
-    if (light_cosine < 0.000001)
-      return color_from_emission;
-
-    pdf_value = distance_squred / (light_cosine * light_area);
-    scattered_ray = Ray(record.hitPoint, to_light, ray.getTime());
+    cosine_pdf surface_pdf(record.normalAgainstRay);
+    scattered_ray = Ray(record.hitPoint, surface_pdf.generate(), ray.getTime());
+    pdf_value = surface_pdf.value(scattered_ray.getDirection());
     double scattering_pdf =
         record.material->Scatter_pdf(ray, record, scattered_ray);
     color3 color_from_scatter =
