@@ -6,6 +6,7 @@
 #include "interval.h"
 #include "ray.h"
 #include "texture.h"
+#include "vec3.h"
 #include <memory>
 
 class Material;
@@ -30,6 +31,14 @@ public:
                    hit_record &record) const = 0;
   virtual ~hittable() = default;
   virtual aabb bounding_box() const = 0;
+
+  virtual double pdf_value(point3 const &origin, vec3 const &direction) const {
+    return 0.0;
+  }
+
+  virtual vec3 random(point3 const &origin) const {
+    return vec3(1.0, 0.0, 0.0);
+  }
 };
 
 class translate : public hittable {

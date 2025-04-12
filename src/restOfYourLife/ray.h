@@ -10,7 +10,7 @@ public:
   double const &getTime() const { return time; }
 
   Ray(){};
-  Ray(point3 const &_origin, vec3 const &_direction, double time)
+  Ray(point3 const &_origin, vec3 const &_direction, double time = 0.0)
       : getorigin(_origin), direction(_direction), time(time){};
 
   point3 at(double factorOfDirection) const {

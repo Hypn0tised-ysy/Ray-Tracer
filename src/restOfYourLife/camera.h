@@ -4,8 +4,8 @@
 #include "color.h"
 #include "common.h"
 #include "hittable.h"
+#include "hittable_list.h"
 #include "material.h"
-#include "nextWeek/ray.h"
 #include "ray.h"
 #include "restOfYourLife/pdf.h"
 #include "vec3.h"
@@ -44,7 +44,7 @@ public:
   double focus_distance = 10;
   double defocus_angle = 0;
 
-  void render(hittable const &world_objects) {
+  void render(hittable const &world_objects, hittable const &lights) {
     initialize();
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
@@ -57,7 +57,7 @@ public:
           for (int stratified_x = 0; stratified_x < sqrt_spp; stratified_x++) {
             Ray sampleRay = getSampleRay(x, y, stratified_x, stratified_y);
             color3 sample_pixel_color =
-                ray_color(sampleRay, max_depth, world_objects);
+                ray_color(sampleRay, max_depth, world_objects, lights);
             pixel_color += sample_pixel_color;
           }
         }
@@ -121,7 +121,8 @@ private:
     reciprocal_sqrt_spp = 1.0 / sqrt_spp;
   }
 
-  color3 ray_color(Ray const &ray, int depth, hittable const &world_objects) {
+  color3 ray_color(Ray const &ray, int depth, hittable const &world_objects,
+                   hittable const &lights) {
     if (depth <= 0)
       return color3(0, 0, 0);
 
@@ -130,11 +131,12 @@ private:
     if (!world_objects.hit(ray, interval(0.001, Infinity_double), record))
       return background;
 
-    return scattered_color(ray, depth, record, world_objects);
+    return scattered_color(ray, depth, record, world_objects, lights);
   }
 
   color3 scattered_color(Ray const &ray, int depth, hit_record &record,
-                         hittable const &world_objects) {
+                         hittable const &world_objects,
+                         hittable const &lights) {
     color3 attenuation;
     Ray scattered_ray;
     color3 color_from_emission =
@@ -146,15 +148,17 @@ private:
                                   pdf_value))
       return color_from_emission;
 
-    cosine_pdf surface_pdf(record.normalAgainstRay);
-    scattered_ray = Ray(record.hitPoint, surface_pdf.generate(), ray.getTime());
-    pdf_value = surface_pdf.value(scattered_ray.getDirection());
+    hittable_pdf light_pdf(lights, record.hitPoint);
+    scattered_ray = Ray(record.hitPoint, light_pdf.generate(), ray.getTime());
+    pdf_value = light_pdf.value(scattered_ray.getDirection());
+
     double scattering_pdf =
         record.material->Scatter_pdf(ray, record, scattered_ray);
+
+    color3 sample_color =
+        ray_color(scattered_ray, depth - 1, world_objects, lights);
     color3 color_from_scatter =
-        cwiseProduct(attenuation * scattering_pdf,
-                     ray_color(scattered_ray, depth - 1, world_objects)) /
-        pdf_value;
+        cwiseProduct(attenuation * scattering_pdf, sample_color) / pdf_value;
 
     return color_from_scatter + color_from_emission;
   }

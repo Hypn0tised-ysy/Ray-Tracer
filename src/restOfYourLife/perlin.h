@@ -1,8 +1,8 @@
 #ifndef PERLIN_H
 #define PERLIN_H
 
-#include "nextWeek/common.h"
-#include "nextWeek/vec3.h"
+#include "common.h"
+#include "vec3.h"
 #include <cmath>
 class perlin {
 public:

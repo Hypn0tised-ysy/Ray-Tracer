@@ -1,14 +1,14 @@
 #ifndef CONSTANT_MEDIUM_H
 #define CONSTANT_MEDIUM_H
 
-#include "nextWeek/aabb.h"
-#include "nextWeek/color.h"
-#include "nextWeek/common.h"
-#include "nextWeek/hittable.h"
-#include "nextWeek/interval.h"
-#include "nextWeek/material.h"
-#include "nextWeek/ray.h"
-#include "nextWeek/vec3.h"
+#include "aabb.h"
+#include "color.h"
+#include "common.h"
+#include "hittable.h"
+#include "interval.h"
+#include "material.h"
+#include "ray.h"
+#include "vec3.h"
 #include <cmath>
 #include <memory>
 class constant_medium : public hittable {

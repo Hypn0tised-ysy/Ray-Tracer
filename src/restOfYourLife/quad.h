@@ -1,13 +1,13 @@
 #ifndef QUAD_H
 #define QUAD_H
 
-#include "nextWeek/aabb.h"
-#include "nextWeek/hittable.h"
-#include "nextWeek/hittable_list.h"
-#include "nextWeek/interval.h"
-#include "nextWeek/material.h"
-#include "nextWeek/ray.h"
-#include "nextWeek/vec3.h"
+#include "aabb.h"
+#include "hittable.h"
+#include "restOfYourLife/hittable_list.h"
+#include "restOfYourLife/interval.h"
+#include "restOfYourLife/material.h"
+#include "restOfYourLife/ray.h"
+#include "restOfYourLife/vec3.h"
 #include <cmath>
 #include <memory>
 class quad : public hittable {
@@ -15,6 +15,7 @@ public:
   quad(point3 _p0, vec3 _u, vec3 _v, std::shared_ptr<Material> _material)
       : p0(_p0), u(_u), v(_v), material(_material) {
     vec3 n = crossProduct(u, v);
+    area = n.norm();
     normal = unit_vector(n);
     D = dotProduct(normal, p0);
     w = n / dotProduct(n, n);
@@ -45,6 +46,27 @@ public:
     record.set_surface_normal(ray, normal);
   }
 
+  double pdf_value(point3 const &origin, vec3 const &direction) const override {
+    hit_record record;
+    if (!this->hit(Ray(origin, direction), interval(0.001, INFINITY_DOUBLE),
+                   record))
+      return 0.0;
+
+    auto distance_squared = record.factorOfDirection *
+                            record.factorOfDirection * direction.norm_square();
+    auto cosine = std::fabs(dotProduct(record.normalAgainstRay, direction) /
+                            direction.norm());
+
+    return distance_squared / (cosine * area);
+  }
+
+  vec3 random(const point3 &origin) const {
+    auto random_u = random_double(0, 1);
+    auto random_v = random_double(0, 1);
+    auto random_point = p0 + random_u * u + random_v * v;
+    return unit_vector(random_point - origin);
+  }
+
 private:
   // 给定初始点和u，v向量生成平行四边形
   point3 p0;
@@ -55,6 +77,7 @@ private:
   std::shared_ptr<Material> material;
   vec3 normal;
   double D; // 平面方程系数
+  double area;
   void calculate_bbox() {
     aabb diagonal1(p0, p0 + u + v);
     aabb diagonal2(p0 + u, p0 + v);

@@ -2,7 +2,6 @@
 #define VEC3_H
 
 #include "common.h"
-#include "nextWeek/common.h"
 #include <cassert>
 #include <cmath>
 #include <cstdlib>

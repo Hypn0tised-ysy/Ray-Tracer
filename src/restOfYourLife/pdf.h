@@ -1,11 +1,12 @@
 #ifndef PDF_H
 #define PDF_H
 
-#include "nextWeek/common.h"
-#include "nextWeek/vec3.h"
-#include "restOfYourLife/orthonormalbasis.h"
-#include "restOfYourLife/vec3.h"
+#include "common.h"
+#include "hittable.h"
+#include "orthonormalbasis.h"
+#include "vec3.h"
 #include <cmath>
+
 class pdf {
 public:
   pdf() {}
@@ -41,6 +42,22 @@ public:
 
 private:
   onb uvw;
+};
+
+class hittable_pdf : public pdf {
+public:
+  hittable_pdf(hittable const &objects, point3 const &origin)
+      : objects(objects), origin(origin) {}
+
+  double value(vec3 const &direction) const override {
+    return objects.pdf_value(origin, direction);
+  }
+
+  vec3 generate() const override { return objects.random(origin); }
+
+private:
+  hittable const &objects;
+  point3 origin;
 };
 
 #endif // PDF_H

@@ -1,7 +1,7 @@
 #ifndef ORTHONORMALBASIS_H
 #define ORTHONORMALBASIS_H
 
-#include "nextWeek/vec3.h"
+#include "vec3.h"
 #include <cmath>
 
 class onb {
