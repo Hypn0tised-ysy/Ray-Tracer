@@ -143,25 +143,29 @@ private:
     color3 color_from_emission =
         record.material->emitted(ray, record, record.textureCoordinate.u,
                                  record.textureCoordinate.v, record.hitPoint);
-    double pdf_value;
 
-    if (!record.material->Scatter(ray, record, attenuation, scattered_ray,
-                                  pdf_value))
+    scatter_record scatter_rec;
+    if (!record.material->Scatter(ray, record, scatter_rec))
       return color_from_emission;
 
-    auto p0 = std::make_shared<cosine_pdf>(record.normalAgainstRay);
-    auto p1 = std::make_shared<hittable_pdf>(lights, record.hitPoint);
-    mixture_pdf mixed_pdf(p0, p1);
+    if (scatter_rec.skip_pdf)
+      return cwiseProduct(scatter_rec.attenuation,
+                          ray_color(scatter_rec.skip_pdf_ray, depth - 1,
+                                    world_objects, lights));
 
-    scattered_ray = Ray(record.hitPoint, mixed_pdf.generate(), ray.getTime());
-    pdf_value = mixed_pdf.value(scattered_ray.getDirection());
-    double scattering_pdf =
+    auto light_ptr = std::make_shared<hittable_pdf>(lights, record.hitPoint);
+    mixture_pdf p(light_ptr, scatter_rec.pdf_ptr);
+
+    scattered_ray = Ray(record.hitPoint, p.generate(), ray.getTime());
+    auto pdf_value = p.value(scattered_ray.getDirection());
+    auto scattering_pdf =
         record.material->Scatter_pdf(ray, record, scattered_ray);
 
     color3 sample_color =
         ray_color(scattered_ray, depth - 1, world_objects, lights);
     color3 color_from_scatter =
-        cwiseProduct(attenuation * scattering_pdf, sample_color) / pdf_value;
+        cwiseProduct(scatter_rec.attenuation * scattering_pdf, sample_color) /
+        pdf_value;
 
     return color_from_scatter + color_from_emission;
   }

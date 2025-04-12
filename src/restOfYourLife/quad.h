@@ -3,11 +3,11 @@
 
 #include "aabb.h"
 #include "hittable.h"
-#include "restOfYourLife/hittable_list.h"
-#include "restOfYourLife/interval.h"
-#include "restOfYourLife/material.h"
-#include "restOfYourLife/ray.h"
-#include "restOfYourLife/vec3.h"
+#include "hittable_list.h"
+#include "interval.h"
+#include "material.h"
+#include "ray.h"
+#include "vec3.h"
 #include <cmath>
 #include <memory>
 class quad : public hittable {
