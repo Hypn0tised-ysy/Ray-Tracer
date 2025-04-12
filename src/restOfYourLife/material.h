@@ -5,6 +5,7 @@
 #include "common.h"
 #include "hittable.h"
 #include "nextWeek/common.h"
+#include "nextWeek/texture.h"
 #include "nextWeek/vec3.h"
 #include "ray.h"
 #include "restOfYourLife/orthonormalbasis.h"
@@ -23,6 +24,10 @@ public:
   virtual color3 emitted(texture_coordinate const &texture_coordinate,
                          point3 const &point) const {
     return emitted(texture_coordinate.u, texture_coordinate.v, point);
+  }
+  virtual color3 emitted(const Ray &ray_in, const hit_record &record, double u,
+                         double v, const point3 &point) const {
+    return color3(0, 0, 0);
   }
 
   virtual bool Scatter(const Ray &ray_in, const hit_record &record,
@@ -46,7 +51,6 @@ public:
     onb uvw(record.normalAgainstRay);
     vec3 scattered_direction =
         uvw.generate_random_relative_vec(random_cosine_direction());
-
     scattered = Ray(record.hitPoint, unit_vector(scattered_direction),
                     ray_in.getTime());
     attenuation = tex->value(record.textureCoordinate, record.hitPoint);
@@ -150,6 +154,23 @@ public:
   color3 emitted(double u, double v, point3 const &point) const override {
     texture_coordinate tex_coordinate = texture_coordinate(u, v);
     return tex->value(tex_coordinate, point);
+  }
+
+  color3 emitted(texture_coordinate const &tex_coordinate,
+                 point3 const &point) const override {
+    return tex->value(tex_coordinate, point);
+  }
+
+  color3 emitted(const Ray &ray_in, const hit_record &record, double u,
+                 double v, const point3 &point) const override {
+    if (!record.frontFace)
+      return color3(0.0, 0.0, 0.0);
+    return tex->value(texture_coordinate(u, v), point);
+  }
+
+  bool Scatter(const Ray &ray_in, const hit_record &record, color3 &attenuation,
+               Ray &scattered, double &pdf) const override {
+    return false; // Diffuse light does not scatter rays
   }
 
 private:
