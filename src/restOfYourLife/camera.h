@@ -6,10 +6,11 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
+#include "pdf.h"
 #include "ray.h"
-#include "restOfYourLife/pdf.h"
 #include "vec3.h"
 #include <cmath>
+#include <memory>
 
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
@@ -148,10 +149,12 @@ private:
                                   pdf_value))
       return color_from_emission;
 
-    hittable_pdf light_pdf(lights, record.hitPoint);
-    scattered_ray = Ray(record.hitPoint, light_pdf.generate(), ray.getTime());
-    pdf_value = light_pdf.value(scattered_ray.getDirection());
+    auto p0 = std::make_shared<cosine_pdf>(record.normalAgainstRay);
+    auto p1 = std::make_shared<hittable_pdf>(lights, record.hitPoint);
+    mixture_pdf mixed_pdf(p0, p1);
 
+    scattered_ray = Ray(record.hitPoint, mixed_pdf.generate(), ray.getTime());
+    pdf_value = mixed_pdf.value(scattered_ray.getDirection());
     double scattering_pdf =
         record.material->Scatter_pdf(ray, record, scattered_ray);
 
