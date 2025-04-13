@@ -19,9 +19,21 @@ double linear_to_gamma(double linear_value) {
 void write_color(std::ostream &out, color3 const &color) {
   static interval const intensity_range(0.0, 0.999);
 
-  auto r = linear_to_gamma(color.r);
-  auto g = linear_to_gamma(color.g);
-  auto b = linear_to_gamma(color.b);
+  auto r = color.r;
+  auto g = color.g;
+  auto b = color.b;
+
+  // remove NaN->NaN doesn't equal itself
+  if (r != r)
+    r = 0.0;
+  if (g != g)
+    g = 0.0;
+  if (b != b)
+    b = 0.0;
+
+  r = linear_to_gamma(color.r);
+  g = linear_to_gamma(color.g);
+  b = linear_to_gamma(color.b);
 
   int rIntensity = int(256 * intensity_range.clamp(r)),
       gIntensity = int(256 * intensity_range.clamp(g)),
