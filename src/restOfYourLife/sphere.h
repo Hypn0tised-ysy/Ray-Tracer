@@ -5,7 +5,9 @@
 #include "hittable.h"
 #include "interval.h"
 #include "moving_center.h"
+#include "nextWeek/common.h"
 #include "ray.h"
+#include "restOfYourLife/orthonormalbasis.h"
 #include "texture.h"
 #include "vec3.h"
 
@@ -74,6 +76,26 @@ public:
     tex_coordinate.v = theta / PI;
   }
 
+  double pdf_value(point3 const &origin, vec3 const &direction) const override {
+    hit_record record;
+    if (!this->hit(Ray(origin, direction), interval(0.001, INFINITY_DOUBLE),
+                   record))
+      return 0;
+
+    auto distance_squared = (center.at(0) - origin).norm_square();
+    auto cos_theta_max = std::sqrt(1 - radius * radius / distance_squared);
+    auto solid_angle = 2 * PI * (1 - cos_theta_max);
+
+    return 1 / solid_angle;
+  }
+
+  vec3 random(point3 const &origin) const override {
+    vec3 direction = center.at(0) - origin;
+    auto distance_squared = direction.norm_square();
+    onb uvw(direction);
+    return uvw.transform(random_to_sphere(radius, distance_squared));
+  }
+
 private:
   moving_center center;
   double radius;
@@ -109,6 +131,17 @@ private:
     aabb bbox_t0 = aabb(center.at(0) - r, center.at(1) + r);
     aabb bbox_t1 = aabb(center.at(1) - r, center.at(1) + r);
     bbox = aabb(bbox_t0, bbox_t1);
+  }
+  static vec3 random_to_sphere(double r, double distance_squared) {
+    auto r1 = random_double();
+    auto r2 = random_double();
+    auto z = 1 + r2 * (std::sqrt(1 - r * r / distance_squared) - 1);
+
+    auto phi = 2 * PI * r1;
+    auto x = std::cos(phi) * std::sqrt(1 - z * z);
+    auto y = std::sin(phi) * std::sqrt(1 - z * z);
+
+    return vec3(x, y, z);
   }
 };
 
