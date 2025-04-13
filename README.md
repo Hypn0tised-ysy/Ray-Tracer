@@ -32,19 +32,21 @@
   - solid color
   - perlin noise
 
-  ## final render
+## final render
 
-  ![image](images/nextWeek/final_render.png)
+![image](images/nextWeek/final_render.png)
 
-  # restOfYourLife
+# restOfYourLife
 
-  ## 实现效果
+## 实现效果
 
-  - stratified sampling
-  - importance sampling implementing pdfs for:
-    - sphere
-    - light(quad shape)
-    - mixed pdf
-    - pdf for hittable-list(mixing their pdf with same weight)
-    ## final render
-    ![image](images/restOfYourLife/final_render.png)
+- stratified sampling
+- importance sampling implementing pdfs for:
+  - sphere
+  - light(quad shape)
+  - mixed pdf
+  - pdf for hittable-list(mixing their pdf with same weight)
+
+## final render
+
+![image](images/restOfYourLife/final_render.png)
