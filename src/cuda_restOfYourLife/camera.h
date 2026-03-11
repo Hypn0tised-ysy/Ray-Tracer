@@ -9,7 +9,9 @@
 #include "pdf.h"
 #include "ray.h"
 #include "vec3.h"
+#include <chrono>
 #include <cmath>
+#include <fstream>
 #include <memory>
 
 template <typename toBlend>
@@ -46,6 +48,8 @@ public:
   double defocus_angle = 0;
 
   void render(hittable const &world_objects, hittable const &lights) {
+    auto start_time=std::chrono::high_resolution_clock::now();
+
     initialize();
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
@@ -69,6 +73,16 @@ public:
     }
 
     std::clog << "\rDone                              \n";
+
+    auto end_time=std::chrono::high_resolution_clock::now();
+    auto duration=std::chrono::duration_cast<std::chrono::seconds>(end_time-start_time).count();
+    std::cout<<"Render time: "<<duration<<" seconds\n";
+
+    std::ofstream log_file("render_time_consumed.log", std::ios::app);
+    if (log_file.is_open()) {
+        log_file << "Render time: " << duration << " seconds\n";
+        log_file.close();
+    }
   }
 
 private:
