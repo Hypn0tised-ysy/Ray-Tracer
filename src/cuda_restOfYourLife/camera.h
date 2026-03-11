@@ -48,6 +48,13 @@ public:
   double defocus_angle = 0;
 
   void render(hittable const &world_objects, hittable const &lights) {
+    std::clog << "CUDA Ray Tracer - GPU并行路径追踪\n";
+    std::clog << "=====================================\n";
+    std::clog << "分辨率: " << image_width << " x " << image_height << "\n";
+    std::clog << "每像素样本: " << sample_per_pixel << "\n";
+    std::clog << "最大深度: " << max_depth << "\n";
+    std::clog << "=====================================\n\n";
+
     auto start_time=std::chrono::high_resolution_clock::now();
 
     initialize();
@@ -76,7 +83,6 @@ public:
 
     auto end_time=std::chrono::high_resolution_clock::now();
     auto duration=std::chrono::duration_cast<std::chrono::seconds>(end_time-start_time).count();
-    std::cout<<"Render time: "<<duration<<" seconds\n";
 
     std::ofstream log_file("render_time_consumed.log", std::ios::app);
     if (log_file.is_open()) {

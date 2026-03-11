@@ -24,9 +24,35 @@
 #include "texture.h"
 #include "vec3.h"
 
+#define CUDA_CHECK(call)                                                       \
+  do {                                                                         \
+    cudaError_t err = call;                                                    \
+    if (err != cudaSuccess) {                                                  \
+      std::cerr << "CUDA ERROR " << cudaGetErrorString(err) << " (file " << __FILE__ << ", line " << __LINE__ << ")\n";    \
+      exit(1);\
+}\
+}\
+while (0)
+
 void cornell_box();
 
 int main(int argc, char **argv) {
+    // 查询GPU信息
+    int device_count;
+    CUDA_CHECK(cudaGetDeviceCount(&device_count));
+    if (device_count == 0) {
+        std::cerr << "错误: 未找到CUDA设备!\n";
+        return 1;
+    }
+
+    cudaDeviceProp prop;
+    CUDA_CHECK(cudaGetDeviceProperties(&prop, 0));
+    std::clog << "使用GPU: " << prop.name << "\n";
+    std::clog << "计算能力: " << prop.major << "." << prop.minor << "\n";
+    std::clog << "全局内存: " << (prop.totalGlobalMem / 1e9) << " GB\n";
+    std::clog << "最大线程/block: " << prop.maxThreadsPerBlock << "\n";
+    std::clog << "\n";
+
   cornell_box();
   return 0;
 }
