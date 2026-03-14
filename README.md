@@ -50,3 +50,6 @@
 ## final render
 
 ![image](images/restOfYourLife/final_render.png)
+# CUDA_refactor_version  
+用CUDA驱动GPU进行渲染  
+将restOfYourLife final render Cornell box的渲染从CPU端的8min提升至26s  
