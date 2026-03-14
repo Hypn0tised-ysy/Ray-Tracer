@@ -68,6 +68,8 @@ public:
     return cos_theta < 0.0 ? 0.0 : cos_theta / PI;
   }
 
+  shared_ptr<texture> const &get_texture() const { return tex; }
+
 private:
   shared_ptr<texture> tex;
 };
@@ -90,6 +92,9 @@ public:
         Ray(record.hitPoint, reflected, ray_in.getTime());
     return true;
   }
+
+  color3 const &get_albedo() const { return albedo; }
+  double get_fuzziness() const { return fuzziness; }
 
 private:
   color3 albedo;
@@ -125,6 +130,8 @@ public:
         Ray(record.hitPoint, scattered_direction, ray_in.getTime());
     return true;
   }
+
+  double get_refraction_index() const { return refraction_index; }
 
 private:
   double refraction_index;
@@ -183,6 +190,8 @@ public:
     return false; // Diffuse light does not scatter rays
   }
 
+  shared_ptr<texture> const &get_texture() const { return tex; }
+
 private:
   shared_ptr<texture> tex;
 };
@@ -205,6 +214,8 @@ public:
                      const Ray &scattered) const override {
     return 1 / (4 * PI);
   }
+
+  shared_ptr<texture> const &get_texture() const { return tex; }
 
 private:
   shared_ptr<texture> tex;

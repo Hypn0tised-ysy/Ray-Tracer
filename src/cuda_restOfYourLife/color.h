@@ -10,13 +10,13 @@
 
 using color3 = vec3;
 
-double linear_to_gamma(double linear_value) {
+CUDA_RT_HD double linear_to_gamma(double linear_value) {
   if (linear_value > 0)
     return std::sqrt(linear_value);
   return 0;
 }
 
-void write_color(std::ostream &out, color3 const &color) {
+inline void write_color(std::ostream &out, color3 const &color) {
   static interval const intensity_range(0.0, 0.999);
 
   auto r = color.r;

@@ -63,6 +63,9 @@ public:
     return bbox;
   }
 
+  shared_ptr<hittable> const &get_object() const { return object; }
+  vec3 const &get_offset() const { return offset; }
+
 private:
   shared_ptr<hittable> object; // or instance of primitive
   vec3 offset;
@@ -140,6 +143,10 @@ public:
     return true;
   }
   aabb bounding_box() const override { return bbox; }
+
+  shared_ptr<hittable> const &get_object() const { return object; }
+  double get_sin_theta() const { return sin_theta; }
+  double get_cos_theta() const { return cos_theta; }
 
 private:
   shared_ptr<hittable> object;

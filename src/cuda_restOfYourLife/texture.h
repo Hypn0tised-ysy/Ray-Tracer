@@ -37,6 +37,8 @@ public:
     return albedo;
   }
 
+  color3 const &get_albedo() const { return albedo; }
+
 private:
   color3 albedo;
 };
@@ -65,6 +67,10 @@ public:
                   : odd->value(tex_coordinate, hitPoint);
   }
 
+  double get_scale() const { return scale; }
+  shared_ptr<solid_color> const &get_even() const { return even; }
+  shared_ptr<solid_color> const &get_odd() const { return odd; }
+
 private:
   double scale;
   shared_ptr<solid_color> even;
@@ -91,6 +97,8 @@ public:
     return color_scale * color3(pixel[0], pixel[1], pixel[2]);
   }
 
+  rtw_image const &get_image() const { return image; }
+
 private:
   rtw_image image;
 };
@@ -104,6 +112,8 @@ public:
            (1 + std::sin(1.0 + hitPoint.z * scale +
                          10.0 * perlin_noise.turbulence(hitPoint, 7)));
   }
+
+  double get_scale() const { return scale; }
 
 private:
   perlin perlin_noise;

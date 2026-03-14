@@ -36,7 +36,8 @@ while (0)
 
 void cornell_box();
 
-int main(int argc, char **argv) {
+int print_GPU_info()
+{
     // 查询GPU信息
     int device_count;
     CUDA_CHECK(cudaGetDeviceCount(&device_count));
@@ -44,7 +45,11 @@ int main(int argc, char **argv) {
         std::cerr << "错误: 未找到CUDA设备!\n";
         return 1;
     }
+    return 0;
+}
 
+void print_GPU_property()
+{
     cudaDeviceProp prop;
     CUDA_CHECK(cudaGetDeviceProperties(&prop, 0));
     std::clog << "使用GPU: " << prop.name << "\n";
@@ -52,6 +57,13 @@ int main(int argc, char **argv) {
     std::clog << "全局内存: " << (prop.totalGlobalMem / 1e9) << " GB\n";
     std::clog << "最大线程/block: " << prop.maxThreadsPerBlock << "\n";
     std::clog << "\n";
+}
+
+int main(int argc, char **argv) {
+  if (print_GPU_info() != 0) {
+    return 1;
+  }
+  print_GPU_property();
 
   cornell_box();
   return 0;

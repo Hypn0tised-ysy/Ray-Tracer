@@ -96,6 +96,11 @@ public:
     return uvw.transform(random_to_sphere(radius, distance_squared));
   }
 
+  point3 center_at(double time) const { return center.at(time); }
+  moving_center const &get_center_motion() const { return center; }
+  double get_radius() const { return radius; }
+  std::shared_ptr<Material> const &get_material() const { return material; }
+
 private:
   moving_center center;
   double radius;

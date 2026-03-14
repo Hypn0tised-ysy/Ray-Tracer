@@ -9,10 +9,12 @@
 #include "pdf.h"
 #include "ray.h"
 #include "vec3.h"
+#include "cuda_renderer_bridge.cuh"
 #include <chrono>
 #include <cmath>
 #include <fstream>
 #include <memory>
+#include <vector>
 
 template <typename toBlend>
 toBlend lerp(double fromStartToEnd, toBlend &startValue, toBlend &endValue) {
@@ -48,46 +50,81 @@ public:
   double defocus_angle = 0;
 
   void render(hittable const &world_objects, hittable const &lights) {
-    std::clog << "CUDA Ray Tracer - GPU并行路径追踪\n";
-    std::clog << "=====================================\n";
-    std::clog << "分辨率: " << image_width << " x " << image_height << "\n";
-    std::clog << "每像素样本: " << sample_per_pixel << "\n";
-    std::clog << "最大深度: " << max_depth << "\n";
-    std::clog << "=====================================\n\n";
-
-    auto start_time=std::chrono::high_resolution_clock::now();
-
     initialize();
+
+    int const display_height =
+        std::max(1, static_cast<int>(image_width / (aspect_ratio > 0 ? aspect_ratio : 1.0)));
+    print_GPU_info(display_height);
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
-    for (int y = 0; y < image_height; y++) {
-      std::clog << "\rScanlines remaining: " << image_height - y << "    "
-                << std::flush;
-      for (int x = 0; x < image_width; x++) {
-        color3 pixel_color(0, 0, 0);
-        for (int stratified_y = 0; stratified_y < sqrt_spp; stratified_y++) {
-          for (int stratified_x = 0; stratified_x < sqrt_spp; stratified_x++) {
-            Ray sampleRay = getSampleRay(x, y, stratified_x, stratified_y);
-            color3 sample_pixel_color =
-                ray_color(sampleRay, max_depth, world_objects, lights);
-            pixel_color += sample_pixel_color;
-          }
-        }
+    bool rendered_on_gpu = false;
+    std::vector<color3> gpu_pixels;
+#ifdef __CUDACC__
+    rendered_on_gpu = cuda_backend::render_with_cuda(
+        aspect_ratio, image_width, image_height, sample_per_pixel, max_depth,
+        background, lookfrom, lookat, up, vFov, focus_distance, defocus_angle,
+        world_objects, lights, gpu_pixels);
+#endif
 
-        pixel_color *= sample_scale;
-        write_color(std::cout, pixel_color);
+    if (rendered_on_gpu &&
+        static_cast<int>(gpu_pixels.size()) == image_width * image_height) {
+      for (int y = 0; y < image_height; y++) {
+        std::clog << "\rScanlines remaining: " << image_height - y << "    "
+                  << std::flush;
+        for (int x = 0; x < image_width; x++) {
+          write_color(std::cout, gpu_pixels[y * image_width + x]);
+        }
       }
+      std::clog << "\rDone (CUDA path)                    \n";
+    } else {
+      if (!rendered_on_gpu) {
+        std::clog << "CUDA backend unavailable, fallback to CPU path.\n";
+      }
+
+      // CPU fallback keeps original architecture and rendering flow.
+      for (int y = 0; y < image_height; y++) {
+        std::clog << "\rScanlines remaining: " << image_height - y << "    "
+                  << std::flush;
+        for (int x = 0; x < image_width; x++) {
+          color3 pixel_color(0, 0, 0);
+          for (int stratified_y = 0; stratified_y < sqrt_spp; stratified_y++) {
+            for (int stratified_x = 0; stratified_x < sqrt_spp;
+                 stratified_x++) {
+              Ray sampleRay = getSampleRay(x, y, stratified_x, stratified_y);
+              color3 sample_pixel_color =
+                  ray_color(sampleRay, max_depth, world_objects, lights);
+              pixel_color += sample_pixel_color;
+            }
+          }
+
+          pixel_color *= sample_scale;
+          write_color(std::cout, pixel_color);
+        }
+      }
+
+      std::clog << "\rDone (CPU path)                     \n";
     }
 
-    std::clog << "\rDone                              \n";
-
-    auto end_time=std::chrono::high_resolution_clock::now();
-    auto duration=std::chrono::duration_cast<std::chrono::seconds>(end_time-start_time).count();
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration =
+        std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time)
+            .count();
 
     std::ofstream log_file("render_time_consumed.log", std::ios::app);
     if (log_file.is_open()) {
-        log_file << "Render time: " << duration << " seconds\n";
-        log_file.close();
+      log_file << "Render time: " << duration << " seconds"
+               << (rendered_on_gpu ? " (CUDA)" : " (CPU)") << "\n";
+      log_file.close();
+    }
+
+    std::ofstream time_log("time_consumed.log", std::ios::app);
+    if (time_log.is_open()) {
+      time_log << "Render time: " << duration << " seconds"
+               << (rendered_on_gpu ? " (CUDA)" : " (CPU)") << "\n";
+      time_log.close();
     }
   }
 
@@ -199,6 +236,16 @@ private:
     double time = random_double();
     Ray sample_ray(ray_origin, ray_direction, time);
     return sample_ray;
+  }
+
+  void print_GPU_info(int display_height)
+  {
+    std::clog << "CUDA Ray Tracer - GPU并行路径追踪\n";
+    std::clog << "=====================================\n";
+    std::clog << "分辨率: " << image_width << " x " << display_height << "\n";
+    std::clog << "每像素样本: " << sample_per_pixel << "\n";
+    std::clog << "最大深度: " << max_depth << "\n";
+    std::clog << "=====================================\n\n";
   }
 
   vec3 sample_square() const {

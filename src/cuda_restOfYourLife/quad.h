@@ -67,6 +67,15 @@ public:
     return unit_vector(random_point - origin);
   }
 
+  point3 const &get_p0() const { return p0; }
+  vec3 const &get_u() const { return u; }
+  vec3 const &get_v() const { return v; }
+  vec3 const &get_normal() const { return normal; }
+  vec3 const &get_w() const { return w; }
+  double get_D() const { return D; }
+  double get_area() const { return area; }
+  std::shared_ptr<Material> const &get_material() const { return material; }
+
 private:
   // 给定初始点和u，v向量生成平行四边形
   point3 p0;
